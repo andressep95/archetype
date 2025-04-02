@@ -8,6 +8,7 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+    java
 }
 
 repositories {
@@ -35,6 +36,20 @@ java {
 application {
     // Define the main class for the application.
     mainClass = "org.example.App"
+}
+
+// Configuración específica para el JAR ejecutable
+tasks.jar {
+    manifest {
+        attributes(
+            "Main-Class" to application.mainClass,
+            "Implementation-Version" to project.version
+        )
+    }
+
+    // Esta parte es opcional - solo necesaria si tienes dependencias
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.named<Test>("test") {
