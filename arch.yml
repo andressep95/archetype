@@ -1,0 +1,13 @@
+version: "1.0"
+application:
+  build: "gradle" # Options: gradle, maven to define the initial folder structure
+
+sql:
+  engine: "postgresql"  # Options: postgresql, mysql, oracle, sqlserver to subsequently define configurations in application.properties or application.yml
+  schema:
+    path: "path/to/your/schema.sql" # Separate by periods or slashes, consider Windows option as well
+
+output:
+  basePackage: "com.example.demo" # Separate by periods or slashes, consider Windows option as well
+  options:
+    lombok: false # Options: true, false
