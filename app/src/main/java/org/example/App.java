@@ -44,12 +44,14 @@ public class App {
               arch [command] [options]
             
             Commands:
-              config, c [path]     Load or create configuration from path (default: arch.yml)
-              status, s            Show current configuration status
+              config, c [path]     Read configuration from path for debug(default: arch.yml)
+              init, i              Generate configuration file with basic settings
               generate, g [type]   Generate code from SQL schema
                 Types:
                   models, m        Generate model classes
                   repos, r         Generate repository classes
+                  services, s      Generate service classes
+                  controllers, c.  Generate controller classes
                   all, a           Generate all code artifacts
               process, p           Process SQL schema with current configuration
               version, v           Show the tool's version
