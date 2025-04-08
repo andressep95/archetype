@@ -7,6 +7,8 @@ sql:
   schema:
     path:
       - "path/to/first/schema.sql" # Separate by periods or slashes, consider Windows option as well
+      - "path/to/second/schema.sql"
+      - "path/to/third/schema.sql"
 
 output:
   basePackage: "com.example.demo" # Separate by periods or slashes, consider Windows option as well

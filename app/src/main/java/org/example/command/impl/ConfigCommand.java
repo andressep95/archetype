@@ -30,8 +30,9 @@ public class ConfigCommand implements Command {
                 System.out.println("✅ Configuration loaded successfully");
                 System.out.println("• App builder: " + config.getApplication().getBuild());
                 System.out.println("• SQL Engine: " + config.getSql().getEngine());
-                System.out.println("• Base Package: " + config.getOutput().getBasePackage());
                 System.out.println("• Schema Path: " + config.getSql().getSchema().getPath());
+                System.out.println("• Base Package: " + config.getOutput().getBasePackage());
+                System.out.println("• lombok enabled: " + config.getOutput().getOptions().isLombok());
             });
 
             // Add error handling

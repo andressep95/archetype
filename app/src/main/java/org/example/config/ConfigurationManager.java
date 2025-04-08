@@ -69,7 +69,6 @@ public class ConfigurationManager {
 
                 // Load and parse configuration
                 AppConfiguration config = loader.loadFromFile(path);
-                System.out.println(config);
 
                 // Validate configuration
                 validator.validate(config);

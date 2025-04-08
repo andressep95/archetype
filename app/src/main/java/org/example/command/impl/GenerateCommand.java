@@ -4,8 +4,9 @@ import org.example.command.Command;
 import org.example.command.CommandRegistry;
 import org.example.config.ConfigurationManager;
 import org.example.config.model.AppConfiguration;
-import org.example.exception.ConfigurationException;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 public class GenerateCommand implements Command {
 
     private final Map<String, Runnable> subCommands = new HashMap<>();
+    private final String DEFAULT_CONFIG_PATH = "arch.yml";
 
     public GenerateCommand() {
         // Register the sub-commands with full names and shorthands
@@ -23,6 +25,12 @@ public class GenerateCommand implements Command {
         subCommands.put("repos", this::generateRepositories);
         subCommands.put("r", this::generateRepositories);
 
+        subCommands.put("services", this::generateServices);
+        subCommands.put("s", this::generateServices);
+
+        subCommands.put("controllers", this::generateControllers);
+        subCommands.put("c", this::generateControllers);
+
         subCommands.put("all", this::generateAll);
         subCommands.put("a", this::generateAll);
     }
@@ -30,13 +38,15 @@ public class GenerateCommand implements Command {
     @Override
     public void execute(String[] args) {
         ConfigurationManager configManager = ConfigurationManager.getInstance();
+        loadConfiguration();
 
+        // Verificar de nuevo después del intento de carga
         if (!configManager.isConfigured()) {
-            throw new ConfigurationException("Configuration not loaded. Run 'arch config' first.");
+            System.err.println("❌ Failed to load configuration. Please run 'arch config' first or check your configuration file.");
+            return;
         }
 
         if (args.length == 0) {
-            // Default to generating all if no sub-command provided
             generateAll();
             return;
         }
@@ -52,16 +62,38 @@ public class GenerateCommand implements Command {
         }
     }
 
+    private void loadConfiguration() {
+        try {
+            ConfigurationManager configManager = ConfigurationManager.getInstance();
+            Path configPath = Paths.get(DEFAULT_CONFIG_PATH);
+
+            // Intentar cargar la configuración
+            CompletableFuture<AppConfiguration> future = configManager.loadConfiguration(configPath.toString());
+
+            // Manejar el resultado
+            future.thenAccept(config -> {
+                System.out.println("✅ Configuration loaded successfully from " + configPath);
+            }).exceptionally(ex -> {
+                System.err.println("❌ Failed to load configuration: " + ex.getMessage());
+                return null;
+            }).join(); // Esperar que se complete la carga
+
+        } catch (Exception e) {
+            System.err.println("❌ Error loading configuration: " + e.getMessage());
+        }
+    }
+
     private void generateModels() {
         ConfigurationManager configManager = ConfigurationManager.getInstance();
         AppConfiguration config = configManager.getConfiguration();
+        String basePackage = config.getOutput().getBasePackage();
+        List<String> sqlPath = config.getSql().getSchema().getPath();
 
         System.out.println("Generating model classes...");
-
         // In a real implementation, this would use the configuration to read the schema
         // and generate the model classes
-        List<String> sqlPath = config.getSql().getSchema().getPath();
-        String basePackage = config.getOutput().getBasePackage();
+
+        System.out.println("Using SQL schema paths: " + String.join(", ", sqlPath));
 
         CompletableFuture.runAsync(() -> {
             try {
@@ -75,13 +107,53 @@ public class GenerateCommand implements Command {
     }
 
     private void generateRepositories() {
+        ConfigurationManager configManager = ConfigurationManager.getInstance();
+        AppConfiguration config = configManager.getConfiguration();
+        String basePackage = config.getOutput().getBasePackage();
+
         System.out.println("Generating repository classes...");
 
         CompletableFuture.runAsync(() -> {
             try {
                 // Simulate some work
                 Thread.sleep(500);
-                System.out.println("✅ Generated repository classes");
+                System.out.println("✅ Generated repository classes at " + basePackage + ".repository");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, CommandRegistry.getInstance().getExecutor()).join();
+    }
+
+    private void generateServices() {
+        ConfigurationManager configManager = ConfigurationManager.getInstance();
+        AppConfiguration config = configManager.getConfiguration();
+        String basePackage = config.getOutput().getBasePackage();
+
+        System.out.println("Generating services interfaces...");
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                // Simulate some work
+                Thread.sleep(500);
+                System.out.println("✅ Generated services interfaces at " + basePackage + ".service");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, CommandRegistry.getInstance().getExecutor()).join();
+    }
+
+    private void generateControllers() {
+        ConfigurationManager configManager = ConfigurationManager.getInstance();
+        AppConfiguration config = configManager.getConfiguration();
+        String basePackage = config.getOutput().getBasePackage();
+
+        System.out.println("Generating controllers classes...");
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                // Simulate some work
+                Thread.sleep(500);
+                System.out.println("✅ Generated controllers classes at " + basePackage + ".controller");
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
