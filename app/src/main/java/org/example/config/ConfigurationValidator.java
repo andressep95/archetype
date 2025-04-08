@@ -4,6 +4,8 @@ import javax.naming.ConfigurationException;
 
 import org.example.config.model.AppConfiguration;
 
+import java.util.List;
+
 /**
  * Validates configuration structures to ensure they meet required constraints.
  */
@@ -30,10 +32,11 @@ public class ConfigurationValidator {
             throw new ConfigurationException("SQL configuration section is required");
         }
 
-        if (config.getSql().getSchema() == null ||
-            config.getSql().getSchema().getPath() == null ||
-            config.getSql().getSchema().getPath().trim().isEmpty()) {
-            throw new ConfigurationException("SQL schema path is required");
+        List<String> paths = config.getSql().getSchema().getPath();
+        for (String path : paths) {
+            if (path == null || path.trim().isEmpty()) {
+                throw new ConfigurationException("SQL schema path entries cannot be empty");
+            }
         }
 
         // Validate SQL engine

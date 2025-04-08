@@ -6,10 +6,10 @@ import org.example.exception.ConfigurationException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * Handles loading and parsing YAML configuration files without external dependencies.
@@ -45,45 +45,87 @@ public class ConfigurationLoader {
      */
     private Map<String, Object> parseYaml(String yamlContent) {
         Map<String, Object> rootMap = new ConcurrentHashMap<>();
-        Stack<Map<String, Object>> contextStack = new Stack<>();
+        Stack<Object> contextStack = new Stack<>();
         Stack<Integer> indentStack = new Stack<>();
+        Stack<String> keyStack = new Stack<>();
 
         contextStack.push(rootMap);
-        indentStack.push(-1); // Nivel base
+        indentStack.push(-1);
+        keyStack.push(null); // Sin clave en el root
 
-        String[] lines = yamlContent.split("\n");
+        String[] lines = yamlContent.split("\\r?\\n");
 
         for (String line : lines) {
             String cleanLine = line.split("#")[0].trim();
             if (cleanLine.isEmpty()) continue;
 
             int currentIndent = line.indexOf(cleanLine);
-            String[] parts = cleanLine.split(":", 2);
-            String key = parts[0].trim();
 
-            // Manejar niveles de indentación
+            // Manejo de indentación
             while (currentIndent <= indentStack.peek() && contextStack.size() > 1) {
                 contextStack.pop();
                 indentStack.pop();
+                keyStack.pop();
             }
 
-            Map<String, Object> currentMap = contextStack.peek();
+            if (cleanLine.startsWith("-")) {
+                // Item de lista
+                String itemValue = cleanLine.substring(1).trim();
+                Object currentContext = contextStack.peek();
 
-            if (parts.length == 1 || parts[1].trim().isEmpty()) {
-                // Nuevo nivel anidado
-                Map<String, Object> newMap = new ConcurrentHashMap<>();
-                currentMap.put(key, newMap);
-                contextStack.push(newMap);
-                indentStack.push(currentIndent);
+                if (currentContext instanceof List<?>) {
+                    ((List<Object>) currentContext).add(processValue(itemValue));
+                } else if (currentContext instanceof Map<?, ?>) {
+                    String parentKey = keyStack.peek();
+                    Map<String, Object> mapContext = (Map<String, Object>) currentContext;
+
+                    Object existing = mapContext.get(parentKey);
+                    List<Object> list;
+                    if (existing instanceof List<?>) {
+                        list = (List<Object>) existing;
+                    } else {
+                        list = new ArrayList<>();
+                        mapContext.put(parentKey, list);
+                    }
+
+                    Object processedItem = processValue(itemValue);
+                    list.add(processedItem);
+
+                    contextStack.push(list);
+                    indentStack.push(currentIndent);
+                    keyStack.push(null); // No hay clave para items individuales
+                }
             } else {
-                // Valor directo
-                String value = parts[1].trim();
-                currentMap.put(key, processValue(value));
+                String[] parts = cleanLine.split(":", 2);
+                String key = parts[0].trim();
+
+                Object currentContext = contextStack.peek();
+
+                if (parts.length == 1 || parts[1].trim().isEmpty()) {
+                    // Sección anidada vacía
+                    Map<String, Object> newMap = new ConcurrentHashMap<>();
+                    if (currentContext instanceof Map<?, ?>) {
+                        ((Map<String, Object>) currentContext).put(key, newMap);
+                    }
+                    contextStack.push(newMap);
+                    indentStack.push(currentIndent);
+                    keyStack.push(key);
+                } else {
+                    String value = parts[1].trim();
+
+                    if (currentContext instanceof Map<?, ?>) {
+                        ((Map<String, Object>) currentContext).put(key, processValue(value));
+                        keyStack.push(key);
+                        contextStack.push(currentContext); // mantener el contexto actual para futuras líneas hijas
+                        indentStack.push(currentIndent);
+                    }
+                }
             }
         }
 
         return rootMap;
     }
+
 
     /**
      * Process YAML value to convert to appropriate Java type
@@ -181,11 +223,27 @@ public class ConfigurationLoader {
 
             Object path = schemaMap.get("path");
             if (path != null) {
-                schemaConfig.setPath(path.toString());
+                if (path instanceof List<?>) {
+                    // Si es una lista, simplemente convertimos cada elemento a String
+                    List<?> pathList = (List<?>) path;
+                    List<String> stringPaths = pathList.stream()
+                        .map(Object::toString)
+                        .collect(Collectors.toList());
+                    schemaConfig.setPath(stringPaths);
+                } else if (path instanceof String) {
+                    // Si es un string único, lo envolvemos en una lista
+                    schemaConfig.setPath(Collections.singletonList(path.toString()));
+                } else {
+                    // Para cualquier otro tipo, convertimos a string y lo envolvemos
+                    schemaConfig.setPath(Collections.singletonList(path.toString()));
+                }
+            } else {
+                // Inicializar como lista vacía si no hay valor
+                schemaConfig.setPath(new ArrayList<>());
             }
             sqlConfig.setSchema(schemaConfig);
+            config.setSql(sqlConfig);
         }
-        config.setSql(sqlConfig);
 
         // Output (requerido)
         Object outputObj = yamlMap.get("output");

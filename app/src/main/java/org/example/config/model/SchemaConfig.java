@@ -1,23 +1,25 @@
 package org.example.config.model;
 
+import java.util.List;
+
 /**
  * SQL schema configuration section.
  */
 public class SchemaConfig {
-    private String path;
+    private List<String> path;
 
-    public String getPath() {
+    public List<String> getPath() {
         return path;
     }
 
-    public void setPath(String path) {
+    public void setPath(List<String> path) {
         this.path = path;
     }
 
     @Override
     public String toString() {
         return "SchemaConfig{" +
-            "path='" + path + '\'' +
+            "path=" + path +
             '}';
     }
 }

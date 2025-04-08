@@ -7,6 +7,7 @@ import org.example.config.model.AppConfiguration;
 import org.example.exception.ConfigurationException;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -59,7 +60,7 @@ public class GenerateCommand implements Command {
 
         // In a real implementation, this would use the configuration to read the schema
         // and generate the model classes
-        String sqlPath = config.getSql().getSchema().getPath();
+        List<String> sqlPath = config.getSql().getSchema().getPath();
         String basePackage = config.getOutput().getBasePackage();
 
         CompletableFuture.runAsync(() -> {
