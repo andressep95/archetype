@@ -1,11 +1,13 @@
-package org.example.command;
+package org.example.cli.command;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.example.command.impl.*;
+import org.example.cli.command.impl.CheckCommand;
+import org.example.cli.command.impl.GenerateCommand;
+import org.example.cli.command.impl.VersionCommand;
 
 public class CommandRegistry {
     private static CommandRegistry instance;

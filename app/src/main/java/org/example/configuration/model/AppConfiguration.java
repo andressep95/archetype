@@ -1,4 +1,4 @@
-package org.example.config.model;
+package org.example.configuration.model;
 
 /**
  * Root configuration class that maps to the YAML structure.

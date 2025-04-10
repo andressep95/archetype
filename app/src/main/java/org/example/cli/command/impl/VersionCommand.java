@@ -1,6 +1,6 @@
-package org.example.command.impl;
+package org.example.cli.command.impl;
 
-import org.example.command.Command;
+import org.example.cli.command.Command;
 
 public class VersionCommand implements Command {
 

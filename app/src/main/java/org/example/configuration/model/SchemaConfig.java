@@ -1,4 +1,4 @@
-package org.example.config.model;
+package org.example.configuration.model;
 
 import java.util.List;
 

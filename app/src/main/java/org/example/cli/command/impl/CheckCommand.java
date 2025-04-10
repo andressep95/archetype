@@ -1,10 +1,9 @@
-package org.example.command.impl;
+package org.example.cli.command.impl;
 
-import org.example.command.Command;
-import org.example.config.ConfigurationManager;
-import org.example.config.model.AppConfiguration;
+import org.example.cli.command.Command;
+import org.example.configuration.ConfigurationManager;
+import org.example.configuration.model.AppConfiguration;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class CheckCommand implements Command {

@@ -1,7 +1,9 @@
-package org.example.config;
+package org.example.configuration;
 
-import org.example.config.model.AppConfiguration;
-import org.example.exception.ConfigurationException;
+import org.example.configuration.loader.YmlConfigurationLoader;
+import org.example.configuration.model.AppConfiguration;
+import org.example.configuration.validator.ConfigurationValidator;
+import org.example.common.exception.ConfigurationException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,14 +19,14 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class ConfigurationManager {
     private static volatile ConfigurationManager instance;
-    private final ConfigurationLoader loader;
+    private final YmlConfigurationLoader loader;
     private final ConfigurationValidator validator;
     private final Executor configExecutor;
     private final AtomicReference<AppConfiguration> currentConfig = new AtomicReference<>();
 
     // Private constructor
     private ConfigurationManager() {
-        this.loader = new ConfigurationLoader();
+        this.loader = new YmlConfigurationLoader();
         this.validator = new ConfigurationValidator();
         // Use a dedicated single thread executor for configuration operations
         this.configExecutor = Executors.newSingleThreadExecutor(r -> {

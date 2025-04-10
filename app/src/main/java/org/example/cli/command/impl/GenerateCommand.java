@@ -1,9 +1,9 @@
-package org.example.command.impl;
+package org.example.cli.command.impl;
 
-import org.example.command.Command;
-import org.example.command.CommandRegistry;
-import org.example.config.ConfigurationManager;
-import org.example.config.model.AppConfiguration;
+import org.example.cli.command.Command;
+import org.example.cli.command.CommandRegistry;
+import org.example.configuration.ConfigurationManager;
+import org.example.configuration.model.AppConfiguration;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

@@ -1,8 +1,8 @@
-package org.example.config;
+package org.example.configuration.validator;
 
 import javax.naming.ConfigurationException;
 
-import org.example.config.model.AppConfiguration;
+import org.example.configuration.model.AppConfiguration;
 
 import java.util.List;
 

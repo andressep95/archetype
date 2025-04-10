@@ -1,7 +1,7 @@
-package org.example.config;
+package org.example.configuration.loader;
 
-import org.example.config.model.*;
-import org.example.exception.ConfigurationException;
+import org.example.configuration.model.*;
+import org.example.common.exception.ConfigurationException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 /**
  * Handles loading and parsing YAML configuration files without external dependencies.
  */
-public class ConfigurationLoader {
+public class YmlConfigurationLoader {
     private final AtomicReference<Path> lastLoadedPath = new AtomicReference<>();
 
     /**

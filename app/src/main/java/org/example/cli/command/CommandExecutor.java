@@ -1,4 +1,4 @@
-package org.example.command;
+package org.example.cli.command;
 
 import java.util.concurrent.CompletableFuture;
 
