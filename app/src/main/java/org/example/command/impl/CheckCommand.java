@@ -4,9 +4,10 @@ import org.example.command.Command;
 import org.example.config.ConfigurationManager;
 import org.example.config.model.AppConfiguration;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class ConfigCommand implements Command {
+public class CheckCommand implements Command {
 
     @Override
     public void execute(String[] args) {
@@ -30,7 +31,13 @@ public class ConfigCommand implements Command {
                 System.out.println("✅ Configuration loaded successfully");
                 System.out.println("• App builder: " + config.getApplication().getBuild());
                 System.out.println("• SQL Engine: " + config.getSql().getEngine());
-                System.out.println("• Schema Path: " + config.getSql().getSchema().getPath());
+
+                // Obtén la lista de paths
+                System.out.println("• SQL Schema paths:");
+                config.getSql().getSchema().getPath().forEach(path -> {
+                    System.out.println("    - " + path);
+                });
+
                 System.out.println("• Base Package: " + config.getOutput().getBasePackage());
                 System.out.println("• lombok enabled: " + config.getOutput().getOptions().isLombok());
             });

@@ -38,7 +38,7 @@ public class CommandRegistry {
     }
 
     public void registerDefaultCommands() {
-        registerCommand("config", "c", new ConfigCommand());
+        registerCommand("check", "c", new CheckCommand());
         //registerCommand("status", "s", new StatusCommand());
         registerCommand("generate", "g", new GenerateCommand());
         //registerCommand("process", "p", new ProcessCommand());

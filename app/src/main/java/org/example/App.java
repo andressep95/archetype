@@ -44,7 +44,7 @@ public class App {
               arch [command] [options]
             
             Commands:
-              config, c [path]     Read configuration from path for debug(default: arch.yml)
+              check, c [path]      Read configuration from path for debug(default: arch.yml)
               init, i              Generate configuration file with basic settings
               generate, g [type]   Generate code from SQL schema
                 Types:

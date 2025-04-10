@@ -172,31 +172,45 @@ public class ConfigurationLoader {
     private AppConfiguration mapToAppConfiguration(Map<String, Object> yamlMap) {
         AppConfiguration config = new AppConfiguration();
 
-        // Versión (requerida)
+        // Mapear las diferentes secciones
+        config.setVersion(parseVersion(yamlMap));
+        config.setApplication(parseApplicationConfig(yamlMap));
+        config.setSql(parseSqlConfig(yamlMap));
+        config.setOutput(parseOutputConfig(yamlMap));
+
+        return config;
+    }
+
+    private String parseVersion(Map<String, Object> yamlMap) {
         Object version = yamlMap.get("version");
         if (version == null) {
             throw new ConfigurationException("Missing required 'version' field");
         }
-        config.setVersion(version.toString());
+        return version.toString();
+    }
 
-        // Application
-        if (yamlMap.containsKey("application")) {
-            Object appObj = yamlMap.get("application");
-            if (!(appObj instanceof Map)) {
-                throw new ConfigurationException("'application' should be a map");
-            }
-
-            Map<?, ?> appMap = (Map<?, ?>) appObj;
-            ApplicationConfig appConfig = new ApplicationConfig();
-
-            Object build = appMap.get("build");
-            if (build != null) {
-                appConfig.setBuild(build.toString());
-            }
-            config.setApplication(appConfig);
+    private ApplicationConfig parseApplicationConfig(Map<String, Object> yamlMap) {
+        if (!yamlMap.containsKey("application")) {
+            return null;
         }
 
-        // SQL (requerido)
+        Object appObj = yamlMap.get("application");
+        if (!(appObj instanceof Map)) {
+            throw new ConfigurationException("'application' should be a map");
+        }
+
+        Map<?, ?> appMap = (Map<?, ?>) appObj;
+        ApplicationConfig appConfig = new ApplicationConfig();
+
+        Object build = appMap.get("build");
+        if (build != null) {
+            appConfig.setBuild(build.toString());
+        }
+
+        return appConfig;
+    }
+
+    private SqlConfig parseSqlConfig(Map<String, Object> yamlMap) {
         Object sqlObj = yamlMap.get("sql");
         if (sqlObj == null) {
             throw new ConfigurationException("Missing required 'sql' section");
@@ -216,36 +230,63 @@ public class ConfigurationLoader {
         sqlConfig.setEngine(engine.toString());
 
         // Schema
-        Object schemaObj = sqlMap.get("schema");
-        if (schemaObj instanceof Map) {
-            Map<?, ?> schemaMap = (Map<?, ?>) schemaObj;
-            SchemaConfig schemaConfig = new SchemaConfig();
+        sqlConfig.setSchema(parseSchemaConfig(sqlMap));
 
-            Object path = schemaMap.get("path");
-            if (path != null) {
-                if (path instanceof List<?>) {
-                    // Si es una lista, simplemente convertimos cada elemento a String
-                    List<?> pathList = (List<?>) path;
+        return sqlConfig;
+    }
+
+    private SchemaConfig parseSchemaConfig(Map<?, ?> sqlMap) {
+        Object schemaObj = sqlMap.get("schema");
+        if (!(schemaObj instanceof Map)) {
+            return null;
+        }
+
+        Map<?, ?> schemaMap = (Map<?, ?>) schemaObj;
+        SchemaConfig schemaConfig = new SchemaConfig();
+
+        Object path = schemaMap.get("path");
+
+        if (path != null) {
+            // Primer caso: path es directamente una lista
+            if (path instanceof List<?>) {
+                List<?> pathList = (List<?>) path;
+                List<String> stringPaths = pathList.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toList());
+                schemaConfig.setPath(stringPaths);
+            }
+            // Segundo caso: path es un mapa que contiene otra clave 'path' con la lista real
+            else if (path instanceof Map && ((Map<?, ?>) path).containsKey("path")) {
+                Map<?, ?> pathMap = (Map<?, ?>) path;
+                Object nestedPath = pathMap.get("path");
+
+                if (nestedPath instanceof List<?>) {
+                    List<?> pathList = (List<?>) nestedPath;
                     List<String> stringPaths = pathList.stream()
                         .map(Object::toString)
                         .collect(Collectors.toList());
                     schemaConfig.setPath(stringPaths);
-                } else if (path instanceof String) {
-                    // Si es un string único, lo envolvemos en una lista
-                    schemaConfig.setPath(Collections.singletonList(path.toString()));
-                } else {
-                    // Para cualquier otro tipo, convertimos a string y lo envolvemos
-                    schemaConfig.setPath(Collections.singletonList(path.toString()));
+                } else if (nestedPath != null) {
+                    schemaConfig.setPath(Collections.singletonList(nestedPath.toString()));
                 }
-            } else {
-                // Inicializar como lista vacía si no hay valor
-                schemaConfig.setPath(new ArrayList<>());
             }
-            sqlConfig.setSchema(schemaConfig);
-            config.setSql(sqlConfig);
+            // Tercer caso: path es un string único
+            else if (path instanceof String) {
+                schemaConfig.setPath(Collections.singletonList(path.toString()));
+            }
+            // Cualquier otro caso
+            else {
+                schemaConfig.setPath(Collections.singletonList(path.toString()));
+            }
+        } else {
+            // Inicializar como lista vacía si no hay valor
+            schemaConfig.setPath(new ArrayList<>());
         }
 
-        // Output (requerido)
+        return schemaConfig;
+    }
+
+    private OutputConfig parseOutputConfig(Map<String, Object> yamlMap) {
         Object outputObj = yamlMap.get("output");
         if (outputObj == null) {
             throw new ConfigurationException("Missing required 'output' section");
@@ -265,24 +306,30 @@ public class ConfigurationLoader {
         outputConfig.setBasePackage(basePackage.toString());
 
         // Options
+        outputConfig.setOptions(parseOutputOptions(outputMap));
+
+        return outputConfig;
+    }
+
+    private OutputOptions parseOutputOptions(Map<?, ?> outputMap) {
         Object optionsObj = outputMap.get("options");
-        if (optionsObj instanceof Map) {
-            Map<?, ?> optionsMap = (Map<?, ?>) optionsObj;
-            OutputOptions options = new OutputOptions();
-
-            Object lombok = optionsMap.get("lombok");
-            if (lombok != null) {
-                if (lombok instanceof Boolean) {
-                    options.setLombok((Boolean) lombok);
-                } else {
-                    options.setLombok(Boolean.parseBoolean(lombok.toString()));
-                }
-            }
-            outputConfig.setOptions(options);
+        if (!(optionsObj instanceof Map)) {
+            return null;
         }
-        config.setOutput(outputConfig);
 
-        return config;
+        Map<?, ?> optionsMap = (Map<?, ?>) optionsObj;
+        OutputOptions options = new OutputOptions();
+
+        Object lombok = optionsMap.get("lombok");
+        if (lombok != null) {
+            if (lombok instanceof Boolean) {
+                options.setLombok((Boolean) lombok);
+            } else {
+                options.setLombok(Boolean.parseBoolean(lombok.toString()));
+            }
+        }
+
+        return options;
     }
 
     /**
