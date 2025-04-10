@@ -181,6 +181,13 @@ public class ConfigurationLoader {
         return config;
     }
 
+        /**
+     * Parses the version field from the YAML map.
+     *
+     * @param yamlMap The parsed YAML as a map
+     * @return The version as a string
+     * @throws ConfigurationException if the version field is missing
+     */
     private String parseVersion(Map<String, Object> yamlMap) {
         Object version = yamlMap.get("version");
         if (version == null) {
@@ -189,6 +196,13 @@ public class ConfigurationLoader {
         return version.toString();
     }
 
+    /**
+     * Parses the "application" section from the YAML map.
+     *
+     * @param yamlMap The parsed YAML as a map
+     * @return An {@link ApplicationConfig} object, or null if the "application" section is missing
+     * @throws ConfigurationException if the "application" section is not a map
+     * */
     private ApplicationConfig parseApplicationConfig(Map<String, Object> yamlMap) {
         if (!yamlMap.containsKey("application")) {
             return null;
@@ -210,6 +224,13 @@ public class ConfigurationLoader {
         return appConfig;
     }
 
+    /**
+     * Parses the "sql" section from the YAML map.
+     *
+     * @param yamlMap The parsed YAML as a map
+     * @return A {@link SqlConfig} object containing the SQL configuration
+     * @throws ConfigurationException if the "sql" section is missing or invalid
+     */
     private SqlConfig parseSqlConfig(Map<String, Object> yamlMap) {
         Object sqlObj = yamlMap.get("sql");
         if (sqlObj == null) {
@@ -222,7 +243,7 @@ public class ConfigurationLoader {
         Map<?, ?> sqlMap = (Map<?, ?>) sqlObj;
         SqlConfig sqlConfig = new SqlConfig();
 
-        // Engine (requerido)
+        // Engine (required)
         Object engine = sqlMap.get("engine");
         if (engine == null) {
             throw new ConfigurationException("Missing required 'sql.engine' field");
@@ -235,6 +256,12 @@ public class ConfigurationLoader {
         return sqlConfig;
     }
 
+    /**
+     * Parses the "schema" section from the SQL configuration map.
+     *
+     * @param sqlMap The parsed SQL configuration as a map
+     * @return A {@link SchemaConfig} object containing the schema configuration, or null if the "schema" section is not a map
+     */
     private SchemaConfig parseSchemaConfig(Map<?, ?> sqlMap) {
         Object schemaObj = sqlMap.get("schema");
         if (!(schemaObj instanceof Map)) {
@@ -247,7 +274,7 @@ public class ConfigurationLoader {
         Object path = schemaMap.get("path");
 
         if (path != null) {
-            // Primer caso: path es directamente una lista
+            // Case 1: path is directly a list
             if (path instanceof List<?>) {
                 List<?> pathList = (List<?>) path;
                 List<String> stringPaths = pathList.stream()
@@ -255,7 +282,7 @@ public class ConfigurationLoader {
                     .collect(Collectors.toList());
                 schemaConfig.setPath(stringPaths);
             }
-            // Segundo caso: path es un mapa que contiene otra clave 'path' con la lista real
+            // Case 2: path is a map containing another "path" key with the actual list
             else if (path instanceof Map && ((Map<?, ?>) path).containsKey("path")) {
                 Map<?, ?> pathMap = (Map<?, ?>) path;
                 Object nestedPath = pathMap.get("path");
@@ -270,22 +297,29 @@ public class ConfigurationLoader {
                     schemaConfig.setPath(Collections.singletonList(nestedPath.toString()));
                 }
             }
-            // Tercer caso: path es un string único
+            // Case 3: path is a single string
             else if (path instanceof String) {
                 schemaConfig.setPath(Collections.singletonList(path.toString()));
             }
-            // Cualquier otro caso
+            // Any other case
             else {
                 schemaConfig.setPath(Collections.singletonList(path.toString()));
             }
         } else {
-            // Inicializar como lista vacía si no hay valor
+            // Initialize as an empty list if no value is provided
             schemaConfig.setPath(new ArrayList<>());
         }
 
         return schemaConfig;
     }
 
+    /**
+     * Parses the "output" section from the YAML map.
+     *
+     * @param yamlMap The parsed YAML as a map
+     * @return An {@link OutputConfig} object containing the output configuration
+     * @throws ConfigurationException if the "output" section is missing or invalid
+     */
     private OutputConfig parseOutputConfig(Map<String, Object> yamlMap) {
         Object outputObj = yamlMap.get("output");
         if (outputObj == null) {
@@ -298,7 +332,7 @@ public class ConfigurationLoader {
         Map<?, ?> outputMap = (Map<?, ?>) outputObj;
         OutputConfig outputConfig = new OutputConfig();
 
-        // BasePackage (requerido)
+        // BasePackage (required)
         Object basePackage = outputMap.get("basePackage");
         if (basePackage == null) {
             throw new ConfigurationException("Missing required 'output.basePackage' field");
@@ -311,6 +345,12 @@ public class ConfigurationLoader {
         return outputConfig;
     }
 
+    /**
+     * Parses the "options" section from the output configuration map.
+     *
+     * @param outputMap The parsed output configuration as a map
+     * @return An {@link OutputOptions} object containing the parsed options, or null if the "options" section is missing or invalid
+     */
     private OutputOptions parseOutputOptions(Map<?, ?> outputMap) {
         Object optionsObj = outputMap.get("options");
         if (!(optionsObj instanceof Map)) {
