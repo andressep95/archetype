@@ -1,5 +1,67 @@
-# Ignore Gradle project-specific cache directory
-.gradle
+# Archivos específicos de macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+*.swp
+*.swo
+*.swn
+*.swm
+*.un~
+*~
 
-# Ignore Gradle build output directory
-build
+# Directorios generados por el sistema
+**/.DS_Store
+**/.Trashes
+**/.Spotlight-V100
+**/.fseventsd
+**/.VolumeIcon.icns
+**/.apdisk
+
+# Ignorar archivos de configuración de IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.sw?
+
+# Ignorar Gradle
+.gradle/
+build/
+out/
+bin/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Ignorar dependencias y logs
+**/dependency-reduced-pom.xml
+**/logs/
+*.log
+
+# Ignorar archivos generados por el usuario
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+
+# Ignorar archivos de entorno
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Ignorar archivos de desarrollo local
+*.orig
+*.bak
+*.tmp
+*.temp
+
+# Ignorar archivos de sistema
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini

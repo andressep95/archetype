@@ -6,9 +6,9 @@ sql:
   engine: "postgresql"  # Options: postgresql, mysql, oracle, sqlserver to subsequently define configurations in application.properties or application.yml
   schema:
     path:
-      - "path/to/first/schema.sql" # Separate by periods or slashes, consider Windows option as well
-      - "path/to/second/schema.sql"
-      - "path/to/third/schema.sql"
+      - "products.sql" # Separate by periods or slashes, consider Windows option as well
+      - "customers.sql"
+      - "students.sql"
 
 output:
   basePackage: "com.example.demo" # Separate by periods or slashes, consider Windows option as well

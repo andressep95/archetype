@@ -108,37 +108,4 @@ public class ConfigurationManager {
         return currentConfig.get() != null;
     }
 
-    /**
-     * Reloads the configuration from the last used file.
-     * This can be used to refresh configuration if the file changes.
-     *
-     * @return CompletableFuture that completes when configuration is reloaded
-     * @throws ConfigurationException if no configuration file has been loaded
-     */
-    public CompletableFuture<AppConfiguration> reloadConfiguration() throws ConfigurationException {
-        if (!isConfigured()) {
-            throw new ConfigurationException("Cannot reload: no configuration has been loaded");
-        }
-
-        // The loader keeps track of the last loaded file path
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                AppConfiguration config = loader.reloadConfiguration();
-                validator.validate(config);
-                currentConfig.set(config);
-                return config;
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to reload configuration: " + e.getMessage(), e);
-            }
-        }, configExecutor);
-    }
-
-    /**
-     * Shutdown the configuration manager and release resources.
-     */
-    public void shutdown() {
-        if (configExecutor instanceof java.util.concurrent.ExecutorService) {
-            ((java.util.concurrent.ExecutorService) configExecutor).shutdown();
-        }
-    }
 }
