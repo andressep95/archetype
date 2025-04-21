@@ -28,18 +28,18 @@ public class PostgresSqlExtractor implements SqlExtractor {
     @Override
     public String extractTableName(String sql) {
         Pattern pattern = Pattern.compile(
-            "(?i)CREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?" +
-                "(?:\"[^\"]+\"|\\w+)\\.(?:\"([^\"]+)\"|(\\w+))" +
-                "|" +
-                "(?:\"([^\"]+)\"|(\\w+))"
-        );
+            "(?i)CREATE\\s+TABLE\\s+" +
+                "(?:IF\\s+NOT\\s+EXISTS\\s+)?" +
+                "((?:\"[^\"]+\"|\\w+)(?:\\.(?:\"[^\"]+\"|\\w+))?)"
+                                         );
 
         Matcher matcher = pattern.matcher(sql);
         if (matcher.find()) {
-            return matcher.group(1) != null ? matcher.group(1) :
-                matcher.group(2) != null ? matcher.group(2) :
-                    matcher.group(3) != null ? matcher.group(3) :
-                        matcher.group(4);
+            // Devuelve todo el nombre encontrado (puede incluir esquema o no)
+            String tableName = matcher.group(1);
+
+            // Remover comillas si las hubiera
+            return tableName.replaceAll("\"", "");
         }
         return null;
     }

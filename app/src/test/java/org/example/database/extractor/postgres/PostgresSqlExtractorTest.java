@@ -11,6 +11,226 @@ class PostgresSqlExtractorTest {
 
     private final PostgresSqlExtractor extractor = new PostgresSqlExtractor();
 
+    private final String TEST_SCHEMA = """
+            -- Tabla 1: PRIMARY KEY simple básica
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY,
+                username VARCHAR(50) NOT NULL,
+                email VARCHAR(100)
+            );
+        
+            -- Tabla 2: PRIMARY KEY con SERIAL
+            CREATE TABLE products (
+                product_id SERIAL PRIMARY KEY,
+                name VARCHAR(100),
+                price NUMERIC(10,2)
+            );
+        
+            -- Tabla 3: PRIMARY KEY con CONSTRAINT nombrado
+            CREATE TABLE categories (
+                category_id INTEGER CONSTRAINT pk_category PRIMARY KEY,
+                name VARCHAR(50),
+                description TEXT
+            );
+        
+            -- Tabla 4: PRIMARY KEY con NOT NULL y UNIQUE
+            CREATE TABLE customers (
+                customer_id UUID NOT NULL UNIQUE PRIMARY KEY,
+                name VARCHAR(100),
+                address TEXT
+            );
+        
+            -- Tabla 5: PRIMARY KEY compuesta con CONSTRAINT
+            CREATE TABLE order_items (
+                order_id INTEGER,
+                product_id INTEGER,
+                quantity INTEGER,
+                price NUMERIC(10,2),
+                CONSTRAINT pk_order_items PRIMARY KEY (order_id, product_id)
+            );
+        
+            -- Tabla 6: PRIMARY KEY compuesta sin nombre de CONSTRAINT
+            CREATE TABLE inventory_movements (
+                product_id INTEGER,
+                warehouse_id INTEGER,
+                movement_date TIMESTAMP,
+                quantity INTEGER,
+                PRIMARY KEY (product_id, warehouse_id, movement_date)
+            );
+        
+            -- Tabla 7: PRIMARY KEY con tipo numérico con precisión
+            CREATE TABLE financial_records (
+                transaction_id NUMERIC(20,0) PRIMARY KEY,
+                amount NUMERIC(15,2),
+                transaction_date TIMESTAMP
+            );
+        
+            -- Tabla 8: PRIMARY KEY con múltiples constraints
+            CREATE TABLE employees (
+                employee_id INTEGER NOT NULL CONSTRAINT emp_pk PRIMARY KEY,
+                email VARCHAR(100) UNIQUE,
+                hire_date DATE NOT NULL
+            );
+        
+            -- Tabla 9: PRIMARY KEY tipo BIGINT con espacios adicionales
+            CREATE TABLE logs (
+                log_id BIGINT     PRIMARY    KEY,
+                log_date TIMESTAMP,
+                message TEXT
+            );
+        """;
+
+    private final String TEST_SCHEMA_COMPOSITE = """
+            -- Tabla 1: PK compuesta básica con CONSTRAINT
+            CREATE TABLE order_items (
+                order_id INTEGER,
+                product_id INTEGER,
+                quantity INTEGER,
+                CONSTRAINT pk_order_items PRIMARY KEY (order_id, product_id)
+            );
+        
+            -- Tabla 2: PK compuesta sin nombre de CONSTRAINT
+            CREATE TABLE inventory_log (
+                product_id INTEGER,
+                date_time TIMESTAMP,
+                warehouse_id INTEGER,
+                quantity INTEGER,
+                PRIMARY KEY (product_id, date_time, warehouse_id)
+            );
+        
+            -- Tabla 3: PK compuesta con columnas inline y constraint
+            CREATE TABLE document_versions (
+                doc_id INTEGER PRIMARY KEY,
+                version_id INTEGER,
+                content TEXT,
+                CONSTRAINT pk_version PRIMARY KEY (version_id)
+            );
+        
+            -- Tabla 4: PK compuesta con múltiples constraints
+            CREATE TABLE shipment_details (
+                shipment_id INTEGER,
+                container_id INTEGER,
+                product_id INTEGER,
+                CONSTRAINT pk_shipment PRIMARY KEY (shipment_id),
+                CONSTRAINT pk_container PRIMARY KEY (container_id, product_id)
+            );
+        
+            -- Tabla 5: PK compuesta con NOT NULL y otros modificadores
+            CREATE TABLE financial_transactions (
+                account_id INTEGER NOT NULL,
+                transaction_date TIMESTAMP NOT NULL,
+                sequence_number INTEGER NOT NULL,
+                amount NUMERIC(10,2),
+                CONSTRAINT pk_transaction PRIMARY KEY (account_id, transaction_date, sequence_number)
+            );
+        
+            -- Tabla 6: PK compuesta con espaciado irregular
+            CREATE TABLE audit_log (
+                entity_id     INTEGER,
+                action_type   VARCHAR(50),
+                timestamp    TIMESTAMP,
+                CONSTRAINT    pk_audit    PRIMARY    KEY    (   entity_id   ,    action_type,timestamp   )
+            );
+        """;
+
+    private final String TEST_SCHEMA_IMPOSSIBLE = """
+        -- impossible.sql
+        -- Schema con casos extremos de PRIMARY KEYs en PostgreSQL
+        -- Este archivo contiene casos complejos y desafiantes de definiciones de claves primarias
+        
+        -- ===================================================================================
+        -- Tabla 1: PRIMARY KEYs con múltiples definiciones y formatos mixtos
+        -- ===================================================================================
+        CREATE TABLE mixed_keys (
+            id1 INTEGER     PRIMARY    KEY,                                    -- Espaciado irregular
+            id2 INTEGER NOT NULL CONSTRAINT pk_mixed UNIQUE PRIMARY KEY,       -- Múltiples constraints inline
+            id3 INTEGER 
+                CONSTRAINT another_pk 
+                PRIMARY 
+                KEY,                                                          -- PK multilínea
+            CONSTRAINT composite_pk PRIMARY KEY (id1, id2, id3)               -- PK compuesta redundante
+        );
+        
+        -- ===================================================================================
+        -- Tabla 2: PRIMARY KEYs con comentarios intercalados
+        -- ===================================================================================
+        CREATE TABLE commented_keys (
+            /* Columna principal */
+            user_id SERIAL,                                                   -- Auto-incrementing
+            /* Segunda columna */
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            /* Tercera columna */
+            action_type VARCHAR(50),
+            /* Definición de primary key */
+            CONSTRAINT 
+                /* Nombre del constraint */
+                pk_commented 
+                /* Tipo de constraint */
+                PRIMARY 
+                /* Keyword final */
+                KEY 
+                /* Columnas */
+                (user_id, 
+                 -- Primera columna
+                 timestamp, 
+                 /* Segunda columna */
+                 action_type)
+        );
+        
+        -- ===================================================================================
+        -- Tabla 3: PRIMARY KEYs con múltiples estilos de definición
+        -- ===================================================================================
+        CREATE TABLE multi_pk_styles (
+            col1 INTEGER PRIMARY KEY,                                         -- Simple inline
+            col2 INTEGER CONSTRAINT pk2 PRIMARY KEY,                          -- Con constraint inline
+            col3 INTEGER,
+            col4 INTEGER,
+            col5 INTEGER     PRIMARY        KEY,                             -- Con espaciado extraño
+            FOREIGN KEY (col3) REFERENCES other_table(id),                   -- FK para confundir
+            PRIMARY KEY (col3),                                              -- PK sin nombre
+            CONSTRAINT pk_custom PRIMARY KEY (col4),                         -- PK con nombre
+            CONSTRAINT "pk-special.name" PRIMARY KEY (col5)                  -- PK con nombre especial
+        );
+        
+        -- ===================================================================================
+        -- Tabla 4: PRIMARY KEYs con nombres especiales y caracteres especiales
+        -- ===================================================================================
+        CREATE TABLE "complex.named_table" (
+            "user.id" INTEGER,
+            "timestamp.created" TIMESTAMP,
+            "special-column" VARCHAR(50),
+            CONSTRAINT "pk.with.dots" PRIMARY KEY ("user.id"),
+            CONSTRAINT "pk-with-hyphens" PRIMARY KEY ("timestamp.created"),
+            CONSTRAINT "pk_with_all.types-mixed" PRIMARY KEY ("special-column")
+        );
+        
+        -- ===================================================================================
+        -- Tabla 5: PRIMARY KEYs en diferentes posiciones y con diferentes tipos
+        -- ===================================================================================
+        CREATE TABLE mixed_positions (
+            id1 UUID PRIMARY KEY,                                            -- UUID como PK
+            id2 BIGINT,
+            CONSTRAINT pk_mid PRIMARY KEY (id2),                            -- PK en medio
+            id3 DECIMAL(20,2),
+            id4 VARCHAR(100),
+            PRIMARY KEY (id3, id4),                                         -- PK al final sin nombre
+            CHECK (id2 > 0),                                                -- Otros constraints
+            UNIQUE (id1, id2)
+        );
+        
+        -- ===================================================================================
+        -- Tabla 6: PRIMARY KEYs con tipos de datos complejos y arrays
+        -- ===================================================================================
+        CREATE TABLE complex_types (
+            id1 INTEGER[],                                                  -- Array simple
+            id2 NUMERIC(20,5)[],                                           -- Array con precisión
+            id3 VARCHAR(100) ARRAY[3],                                     -- Array alterno
+            id4 TIMESTAMP WITH TIME ZONE,
+            CONSTRAINT pk_arrays PRIMARY KEY (id1, id2[1], id3[1]),        -- PK con arrays
+            CONSTRAINT pk_timestamp PRIMARY KEY (id4)                       -- PK con timestamp
+        );
+        """;
+
     // TEST TO IDENTIFY THE BODY OF THE SCHEMAS
     @Test
     void extractCreateTableStatements_shouldExtractBasicTables() {
@@ -131,9 +351,8 @@ class PostgresSqlExtractorTest {
     // TEST TO IDENTIFY THE SCHEMAS NAME
     @Test
     void shouldExtractSimpleTableName() {
-        String sql = "CREATE TABLE users (id INT);";
-        System.out.println("Table Name: " + extractor.extractTableName(sql));
-        assertEquals("users", extractor.extractTableName(sql));
+        System.out.println("Table Name: " + extractor.extractTableName(TEST_SCHEMA));
+        assertEquals("users", extractor.extractTableName(TEST_SCHEMA));
     }
 
     @Test
@@ -149,4 +368,23 @@ class PostgresSqlExtractorTest {
         System.out.println("Table Name: " + extractor.extractTableName(sql));
         assertEquals("MyTable", extractor.extractTableName(sql));
     }
+
+
+    // TEST TO EXTRACT DEFINITIONS FROM THE BODY OF THE SCHEMAS
+    @Test
+    void shouldExtractColumnDefinitions() {
+
+        List<String> schemas = extractor.extractCreateTableStatements(TEST_SCHEMA_IMPOSSIBLE);
+        for (String schema : schemas) {
+            String tableName = extractor.extractTableName(schema);
+            System.out.println("Table Name: " + tableName);
+            List<String> definitions = extractor.extractColumnDefinitions(schema);
+            for (String def : definitions) {
+                System.out.println("Column Definition: " + def);
+            }
+            System.out.println();
+        }
+    }
+
+
 }
