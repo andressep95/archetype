@@ -39,7 +39,7 @@ public class PostgresSqlExtractor implements SqlExtractor {
             String tableName = matcher.group(1);
 
             // Remover comillas si las hubiera
-            return tableName.replaceAll("\"", "");
+            return tableName.replaceAll("\"", "").replaceAll(".*\\.", "");
         }
         return null;
     }

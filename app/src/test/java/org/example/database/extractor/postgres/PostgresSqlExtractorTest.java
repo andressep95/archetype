@@ -364,9 +364,8 @@ class PostgresSqlExtractorTest {
 
     @Test
     void shouldExtractQuotedNames() {
-        String sql = "CREATE TABLE \"MySchema\".\"MyTable\" (id INT);";
-        System.out.println("Table Name: " + extractor.extractTableName(sql));
-        assertEquals("MyTable", extractor.extractTableName(sql));
+        System.out.println("Table Name: " + extractor.extractTableName(TEST_SCHEMA));
+        assertEquals("users", extractor.extractTableName(TEST_SCHEMA));
     }
 
 
