@@ -12,7 +12,7 @@ public interface SqlExtractor {
     String extractColumnName(String columnDefinition);
     String extractColumnType(String sql);
     boolean isNotNullColumn(String columnDefinition);
-    boolean isUniqueColumn(String columnDefinition);
+    boolean isUniqueColumn(String columnDefinition, String fullTableDDL);
     String extractDefaultValue(String columnDefinition);
     List<String> extractPrimaryKeyColumns(String sql);
     List<RelationMetadata> extractTableRelations(String sql);

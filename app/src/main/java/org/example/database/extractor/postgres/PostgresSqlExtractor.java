@@ -134,11 +134,38 @@ public class PostgresSqlExtractor implements SqlExtractor {
     }
 
     @Override
-    public boolean isUniqueColumn(String columnDefinition) {
-        Pattern pattern = Pattern.compile(".*\\bUNIQUE\\b.*",
-            Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(columnDefinition);
-        return matcher.matches();
+    public boolean isUniqueColumn(String columnDefinition, String fullTableDDL) {
+        // 1. Verificar si la columna tiene UNIQUE explícito en su definición
+        Pattern inlineUniquePattern = Pattern.compile("\\bUNIQUE\\b", Pattern.CASE_INSENSITIVE);
+        if (inlineUniquePattern.matcher(columnDefinition).find()) {
+            return true;
+        }
+
+        // 2. Extraer el nombre de la columna
+        Pattern columnNamePattern = Pattern.compile("^\\s*\"?([\\w_]+)\"?\\s+", Pattern.CASE_INSENSITIVE);
+        Matcher nameMatcher = columnNamePattern.matcher(columnDefinition);
+        if (!nameMatcher.find()) {
+            return false; // No se pudo extraer el nombre de la columna
+        }
+        String columnName = nameMatcher.group(1);
+
+        // 3. Buscar UNIQUE constraints al final del DDL que incluyan esta columna
+        Pattern constraintUniquePattern = Pattern.compile(
+            "UNIQUE\\s*\\(([^)]+)\\)", Pattern.CASE_INSENSITIVE);
+        Matcher constraintMatcher = constraintUniquePattern.matcher(fullTableDDL);
+
+        while (constraintMatcher.find()) {
+            String columnsGroup = constraintMatcher.group(1); // contenido entre paréntesis
+            String[] columns = columnsGroup.split(",");
+            for (String col : columns) {
+                String cleanCol = col.trim().replaceAll("\"", "");
+                if (cleanCol.equalsIgnoreCase(columnName)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override

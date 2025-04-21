@@ -23,7 +23,8 @@ class PostgresSqlExtractorTest {
             CREATE TABLE products (
                 product_id SERIAL PRIMARY KEY,
                 name VARCHAR(100),
-                price NUMERIC(10,2)
+                price NUMERIC(10,2),
+                CONSTRAINT unique_name UNIQUE (name)
             );
         
             -- Tabla 3: PRIMARY KEY con CONSTRAINT nombrado
@@ -35,9 +36,10 @@ class PostgresSqlExtractorTest {
         
             -- Tabla 4: PRIMARY KEY con NOT NULL y UNIQUE
             CREATE TABLE customers (
-                customer_id UUID NOT NULL UNIQUE PRIMARY KEY,
-                name VARCHAR(100),
-                address TEXT
+                customer_id UUID NOT NULL PRIMARY KEY,
+                username VARCHAR(50),
+                email VARCHAR(100),
+                CONSTRAINT unique_username_email UNIQUE (username, email)
             );
         
             -- Tabla 5: PRIMARY KEY compuesta con CONSTRAINT
@@ -78,6 +80,7 @@ class PostgresSqlExtractorTest {
                 log_date TIMESTAMP,
                 message TEXT
             );
+
         """;
 
     private final String TEST_SCHEMA_COMPOSITE = """
@@ -386,4 +389,61 @@ class PostgresSqlExtractorTest {
     }
 
 
+    // TEST TO EXTRACT THE COLUMN NAME
+    @Test
+    void shouldExtractColumnName() {
+        List<String> schemas = extractor.extractCreateTableStatements(TEST_SCHEMA);
+        for (String schema : schemas) {
+            String tableName = extractor.extractTableName(schema);
+            System.out.println("Table Name: " + tableName);
+            List<String> definitions = extractor.extractColumnDefinitions(schema);
+            for (String def : definitions) {
+                String columnName = extractor.extractColumnName(def);
+                System.out.println("Column Name: " + columnName);
+            }
+            System.out.println();
+        }
+    }
+
+
+    // TEST TO EXTRACT THE COLUMN TYPE
+    @Test
+    void shouldExtractColumnType() {
+        List<String> schemas = extractor.extractCreateTableStatements(TEST_SCHEMA);
+        for (String schema : schemas) {
+            String tableName = extractor.extractTableName(schema);
+            System.out.println("Table Name: " + tableName);
+            List<String> definitions = extractor.extractColumnDefinitions(schema);
+            for (String def : definitions) {
+                String columnName = extractor.extractColumnName(def);
+                String columnType = extractor.extractColumnType(def);
+
+                System.out.println("Column Name: " + columnName + " it´s type: " + columnType);
+            }
+            System.out.println();
+        }
+    }
+
+
+    // TEST TO EXTRACT THE COLUMN NULLABLE OR UNIQUE
+    @Test
+    void shouldExtractColumnNullableOrUnique() {
+        List<String> schemas = extractor.extractCreateTableStatements(TEST_SCHEMA);
+        for (String schema : schemas) {
+            String tableName = extractor.extractTableName(schema);
+            System.out.println("Table Name: " + tableName);
+            List<String> definitions = extractor.extractColumnDefinitions(schema);
+            for (String def : definitions) {
+                String columnName = extractor.extractColumnName(def);
+                String columnType = extractor.extractColumnType(def);
+                boolean columnNotNull = extractor.isNotNullColumn(def);
+                boolean columnUnique = extractor.isUniqueColumn(def, schema);
+
+                System.out.println("Column Name: " + columnName + " it´s type: " + columnType);
+                System.out.println("Column Not Null: " + columnNotNull);
+                System.out.println("Column Unique: " + columnUnique);
+            }
+            System.out.println();
+        }
+    }
 }
