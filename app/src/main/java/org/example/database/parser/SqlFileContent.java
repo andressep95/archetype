@@ -1,4 +1,4 @@
-package org.example.database;
+package org.example.database.parser;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;

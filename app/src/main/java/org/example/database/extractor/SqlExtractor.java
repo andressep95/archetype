@@ -1,0 +1,20 @@
+package org.example.database.extractor;
+
+import org.example.database.model.RelationMetadata;
+
+import java.util.List;
+
+public interface SqlExtractor {
+
+    List<String> extractCreateTableStatements(String sql);
+    List<String> extractColumnDefinitions(String sql);
+    String extractTableName(String sql);
+    String extractColumnName(String columnDefinition);
+    String extractColumnType(String sql);
+    boolean isNotNullColumn(String columnDefinition);
+    boolean isUniqueColumn(String columnDefinition);
+    String extractDefaultValue(String columnDefinition);
+    List<String> extractPrimaryKeyColumns(String sql);
+    List<RelationMetadata> extractTableRelations(String sql);
+
+}

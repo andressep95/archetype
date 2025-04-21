@@ -3,7 +3,7 @@ package org.example.cli.command.impl;
 import org.example.cli.command.Command;
 import org.example.configuration.ConfigurationManager;
 import org.example.configuration.model.AppConfiguration;
-import org.example.database.SqlFileContent;
+import org.example.database.parser.SqlFileContent;
 import org.example.database.SqlFileProcessorManager;
 
 import java.util.List;
