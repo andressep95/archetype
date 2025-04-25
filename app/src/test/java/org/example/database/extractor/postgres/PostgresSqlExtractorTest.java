@@ -1,5 +1,6 @@
 package org.example.database.extractor.postgres;
 
+import org.example.database.model.RelationMetadata;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -234,6 +235,29 @@ class PostgresSqlExtractorTest {
         );
         """;
 
+    private final String TEST_RELATION = """
+        CREATE TABLE customers (
+            customer_id SERIAL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL
+        );
+        
+        CREATE TABLE addresses (
+            address_id SERIAL PRIMARY KEY,
+            street VARCHAR(100) NOT NULL,
+            city VARCHAR(50) NOT NULL
+        );
+        
+        CREATE TABLE orders (
+            order_id SERIAL PRIMARY KEY,
+            order_date DATE NOT NULL,
+            customer_id INTEGER NOT NULL REFERENCES customers(customer_id),
+            billing_address_id INTEGER NOT NULL,
+            shipping_address_id INTEGER,
+            CONSTRAINT fk_billing_address FOREIGN KEY (billing_address_id) REFERENCES addresses(address_id),
+            CONSTRAINT fk_shipping_address FOREIGN KEY (shipping_address_id) REFERENCES addresses(address_id)
+        );
+        """;
+
     // TEST TO IDENTIFY THE BODY OF THE SCHEMAS
     @Test
     void extractCreateTableStatements_shouldExtractBasicTables() {
@@ -425,23 +449,31 @@ class PostgresSqlExtractorTest {
     }
 
 
-    // TEST TO EXTRACT THE COLUMN NULLABLE OR UNIQUE
+    // TEST TO EXTRACT THE COLUMN NULLABLE OR/AND UNIQUE
     @Test
-    void shouldExtractColumnNullableOrUnique() {
-        List<String> schemas = extractor.extractCreateTableStatements(TEST_SCHEMA);
+    void shouldExtractColumnNullableOrUniqueOrDefault() {
+        List<String> schemas = extractor.extractCreateTableStatements(TEST_RELATION);
+
         for (String schema : schemas) {
             String tableName = extractor.extractTableName(schema);
+            List<String> primaryKeys = extractor.extractPrimaryKeyColumns(schema);
+            List<RelationMetadata> relations = extractor.extractTableRelations(schema);
+
             System.out.println("Table Name: " + tableName);
+            System.out.println("Primary Keys: " + primaryKeys);
+            System.out.println("Relations: " + relations);
             List<String> definitions = extractor.extractColumnDefinitions(schema);
             for (String def : definitions) {
                 String columnName = extractor.extractColumnName(def);
                 String columnType = extractor.extractColumnType(def);
                 boolean columnNotNull = extractor.isNotNullColumn(def);
                 boolean columnUnique = extractor.isUniqueColumn(def, schema);
+                String defaultValue = extractor.extractDefaultValue(def);
 
                 System.out.println("Column Name: " + columnName + " it´s type: " + columnType);
                 System.out.println("Column Not Null: " + columnNotNull);
                 System.out.println("Column Unique: " + columnUnique);
+                System.out.println("Column Default Value: " + defaultValue);
             }
             System.out.println();
         }

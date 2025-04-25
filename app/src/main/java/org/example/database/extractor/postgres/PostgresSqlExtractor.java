@@ -247,52 +247,77 @@ public class PostgresSqlExtractor implements SqlExtractor {
         String cleanSql = sql.replaceAll("--[^\\n]*", "")
             .replaceAll("/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", " ");
 
-        Pattern fkPattern = Pattern.compile(
-            // 1. FK inline en definición de columna
-            "(?:(?:\\(|,)\\s*([\"\\w.-]+)\\s+(?:INTEGER|SERIAL|UUID|NUMERIC|BIGINT|VARCHAR|TEXT|TIMESTAMP|DATE|DECIMAL)(?:\\([^)]*\\))?\\s+" +
-                "REFERENCES\\s+([\"\\w.-]+)\\s*\\(([^)]+)\\))" +
-                "|" +
-                // 2. FK con CONSTRAINT nombrado
-                "(?:CONSTRAINT\\s+[\"\\w.-]+\\s+)?" +
-                "FOREIGN\\s+KEY\\s*\\(([^)]+)\\)\\s*" +
-                "REFERENCES\\s+([\"\\w.-]+)\\s*\\(([^)]+)\\)",
-            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE
-                                           );
+        // Primero extraemos el nombre de la tabla actual
+        String currentTable = extractTableName(cleanSql);
+        if (currentTable == null || currentTable.isEmpty()) {
+            return relations;
+        }
 
-        Matcher matcher = fkPattern.matcher(cleanSql);
-        while (matcher.find()) {
-            if (matcher.group(1) != null) {
-                // FK inline
-                String sourceColumn = matcher.group(1).trim().replaceAll("^\"|\"$", "");
-                String targetTable = matcher.group(2).trim().replaceAll("^\"|\"$", "");
-                String targetColumn = matcher.group(3).trim().replaceAll("^\"|\"$", "");
+        // Patrón para FK inline en definición de columna
+        Pattern inlineFkPattern = Pattern.compile(
+            "(?:\\(|,)\\s*([\"\\w.-]+)\\s+(?:\\w+)(?:\\([^)]*\\))?\\s+(?:NOT\\s+NULL\\s+)?(?:UNIQUE\\s+)?(?:DEFAULT\\s+[^\\s,]+\\s+)?REFERENCES\\s+([\"\\w.-]+)\\s*\\(([^)]+)\\)",
+            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE
+                                                 );
+
+        // Patrón para FK con CONSTRAINT nombrado
+        Pattern constraintFkPattern = Pattern.compile(
+            "(?:CONSTRAINT\\s+[\"\\w.-]+\\s+)?FOREIGN\\s+KEY\\s*\\(([^)]+)\\)\\s*REFERENCES\\s+([\"\\w.-]+)\\s*\\(([^)]+)\\)",
+            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE
+                                                     );
+
+        // Buscar FK inline
+        Matcher inlineMatcher = inlineFkPattern.matcher(cleanSql);
+        while (inlineMatcher.find()) {
+            String sourceColumn = inlineMatcher.group(1).trim().replaceAll("^\"|\"$", "");
+            String targetTable = inlineMatcher.group(2).trim().replaceAll("^\"|\"$", "");
+            String targetColumn = inlineMatcher.group(3).trim().replaceAll("^\"|\"$", "");
+
+            relations.add(new RelationMetadata(
+                sourceColumn,
+                targetTable,
+                targetColumn,
+                isColumnUnique(sourceColumn, cleanSql) ? false : true // Si es UNIQUE, podría ser One-to-One
+            ));
+        }
+
+        // Buscar FK con CONSTRAINT
+        Matcher constraintMatcher = constraintFkPattern.matcher(cleanSql);
+        while (constraintMatcher.find()) {
+            String[] sourceColumns = constraintMatcher.group(1).split(",");
+            String targetTable = constraintMatcher.group(2).trim().replaceAll("^\"|\"$", "");
+            String[] targetColumns = constraintMatcher.group(3).split(",");
+
+            for (int i = 0; i < sourceColumns.length && i < targetColumns.length; i++) {
+                String sourceColumn = sourceColumns[i].trim().replaceAll("^\"|\"$", "");
+                String targetColumn = targetColumns[i].trim().replaceAll("^\"|\"$", "");
+
                 relations.add(new RelationMetadata(
                     sourceColumn,
                     targetTable,
                     targetColumn,
-                    true // Many-to-One asumido para este caso
+                    isColumnUnique(sourceColumn, cleanSql) ? false : true // Si es UNIQUE, podría ser One-to-One
                 ));
-            } else if (matcher.group(4) != null) {
-                // FK con CONSTRAINT
-                String[] sourceColumns = matcher.group(4).split(",");
-                String targetTable = matcher.group(5).trim().replaceAll("^\"|\"$", "");
-                String[] targetColumns = matcher.group(6).split(",");
-
-                // Manejar FKs compuestas
-                for (int i = 0; i < sourceColumns.length && i < targetColumns.length; i++) {
-                    String sourceColumn = sourceColumns[i].trim().replaceAll("^\"|\"$", "");
-                    String targetColumn = targetColumns[i].trim().replaceAll("^\"|\"$", "");
-                    relations.add(new RelationMetadata(
-                        sourceColumn,
-                        targetTable,
-                        targetColumn,
-                        true // Many-to-One asumido para este caso
-                    ));
-                }
             }
         }
 
         return relations;
+    }
+
+    // Método auxiliar para determinar si una columna es UNIQUE
+    private boolean isColumnUnique(String columnName, String sql) {
+        // Comprobar si hay una definición UNIQUE directamente en la columna
+        Pattern columnUniquePattern = Pattern.compile(
+            columnName + "\\s+\\w+(?:\\([^)]*\\))?\\s+(?:NOT\\s+NULL\\s+)?UNIQUE",
+            Pattern.CASE_INSENSITIVE
+                                                     );
+
+        // Comprobar si hay una restricción UNIQUE separada
+        Pattern constraintUniquePattern = Pattern.compile(
+            "CONSTRAINT\\s+[\"\\w.-]+\\s+UNIQUE\\s*\\([^)]*" + columnName + "[^)]*\\)",
+            Pattern.CASE_INSENSITIVE
+                                                         );
+
+        return columnUniquePattern.matcher(sql).find() || constraintUniquePattern.matcher(sql).find();
     }
 
 }
