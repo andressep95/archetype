@@ -4,7 +4,7 @@ import org.example.database.model.RelationMetadata;
 
 import java.util.List;
 
-public interface SqlExtractor {
+public interface SqlCreateTableStatementExtractor {
 
     List<String> extractCreateTableStatements(String sql);
     List<String> extractColumnDefinitions(String sql);

@@ -1,6 +1,6 @@
 package org.example.database.extractor.postgres;
 
-import org.example.database.extractor.SqlExtractor;
+import org.example.database.extractor.SqlCreateTableStatementExtractor;
 import org.example.database.model.RelationMetadata;
 
 import java.util.ArrayList;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PostgresSqlExtractor implements SqlExtractor {
+public class PostgresSqlCreateTableStatementExtractor implements SqlCreateTableStatementExtractor {
 
     @Override
     public List<String> extractCreateTableStatements(String sql) {

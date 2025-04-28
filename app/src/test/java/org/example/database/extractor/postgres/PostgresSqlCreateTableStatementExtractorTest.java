@@ -8,9 +8,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PostgresSqlExtractorTest {
+class PostgresSqlCreateTableStatementExtractorTest {
 
-    private final PostgresSqlExtractor extractor = new PostgresSqlExtractor();
+    private final PostgresSqlCreateTableStatementExtractor extractor = new PostgresSqlCreateTableStatementExtractor();
 
     private final String TEST_SCHEMA = """
             -- Tabla 1: PRIMARY KEY simple básica
