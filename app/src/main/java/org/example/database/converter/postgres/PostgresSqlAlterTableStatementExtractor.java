@@ -2,7 +2,6 @@ package org.example.database.converter.postgres;
 
 import org.example.database.converter.SqlAlterTableStatementExtractor;
 import org.example.database.model.AlterType;
-import org.example.database.model.ColumnMetadata;
 import org.example.database.model.TableAlteration;
 
 import java.util.ArrayList;
