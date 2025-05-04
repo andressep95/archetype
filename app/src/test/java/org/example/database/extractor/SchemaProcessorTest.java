@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SchemaProcessorTest {
 
-    private final SchemaProcessor processor = new SchemaProcessor();
+    private final SchemaProcessor extractProcessor = new SchemaProcessor();
     private final AlterTableProcessor alterProcessor = new AlterTableProcessor();
 
     private static final String STUDENT_STATEMENT = """
@@ -44,11 +44,13 @@ class SchemaProcessorTest {
 
     @Test
     void testProcessSchema() {
-        List<TableMetadata> tables = processor.processSchema(STUDENT_STATEMENT);
+        List<TableMetadata> tables = extractProcessor.processSchema(STUDENT_STATEMENT);
         System.out.println("Tables: " + tables);
 
         alterProcessor.processAlterStatements(tables, STUDENT_STATEMENT);
-        System.out.println(tables);
+        tables.forEach(
+            System.out::println
+                      );
     }
 }
 

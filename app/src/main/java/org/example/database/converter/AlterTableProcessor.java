@@ -25,9 +25,6 @@ public class AlterTableProcessor {
                 case ADD_COLUMN:
                     processAddColumn(table, alteration);
                     break;
-                case DROP_COLUMN:
-                    processDropColumn(table, alteration);
-                    break;
                 case MODIFY_COLUMN:
                     processModifyColumn(table, alteration);
                     break;

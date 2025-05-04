@@ -1,12 +1,13 @@
 package org.example.database.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TableMetadata {
     private String tableName;
-    private List<ColumnMetadata> columns;
-    private List<String> primaryKeys;
-    private List<RelationMetadata> relations;
+    private List<ColumnMetadata> columns = new ArrayList<>();
+    private List<String> primaryKeys = new ArrayList<>();
+    private List<RelationMetadata> relations = new ArrayList<>();
 
     // Constructores, getters, setters
     public TableMetadata() {

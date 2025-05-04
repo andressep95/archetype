@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class SqlFileProcessor {
 
@@ -42,6 +43,20 @@ public class SqlFileProcessor {
                 return t;
             }
         );
+    }
+
+    /**
+     * Convierte múltiples SqlFileContent en un solo String SQL
+     *
+     * @param sqlFiles Lista de contenidos SQL a consolidar
+     * @return String con todas las sentencias SQL combinadas
+     */
+    public static String consolidateSqlContents(List<SqlFileContent> sqlFiles) {
+        return sqlFiles.stream()
+            .flatMap(file -> file.getSqlStatements().stream())
+            .map(String::trim)
+            .filter(statement -> !statement.isEmpty())
+            .collect(Collectors.joining("\n\n"));
     }
 
     /**

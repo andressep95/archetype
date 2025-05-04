@@ -38,3 +38,7 @@ RENAME COLUMN price TO unit_price;
 -- Agregar una clave foránea explícita con nombre propio
 ALTER TABLE product
 ADD CONSTRAINT fk_product_category FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE CASCADE;
+
+-- Eliminar la columna description de category (por si quieres ejemplos de DROP)
+ALTER TABLE category
+DROP COLUMN description;
