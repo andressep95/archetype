@@ -7,6 +7,7 @@ import java.util.List;
  */
 public class SchemaConfig {
     private List<String> path;
+    private String directory;
 
     public List<String> getPath() {
         return path;
@@ -16,10 +17,19 @@ public class SchemaConfig {
         this.path = path;
     }
 
+    public String getDirectory() {
+        return directory;
+    }
+
+    public void setDirectory(String directory) {
+        this.directory = directory;
+    }
+
     @Override
     public String toString() {
         return "SchemaConfig{" +
             "path=" + path +
+            ", directory='" + directory + '\'' +
             '}';
     }
 }

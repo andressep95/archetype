@@ -4,6 +4,8 @@ import org.example.cli.command.Command;
 import org.example.cli.command.CommandRegistry;
 import org.example.configuration.ConfigurationManager;
 import org.example.configuration.model.AppConfiguration;
+import org.example.database.SqlFileProcessorManager;
+import org.example.database.parser.SqlFileContent;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -87,23 +89,42 @@ public class GenerateCommand implements Command {
         ConfigurationManager configManager = ConfigurationManager.getInstance();
         AppConfiguration config = configManager.getConfiguration();
         String basePackage = config.getOutput().getBasePackage();
-        List<String> sqlPath = config.getSql().getSchema().getPath();
 
         System.out.println("Generating model classes...");
-        // In a real implementation, this would use the configuration to read the schema
-        // and generate the model classes
 
-        System.out.println("Using SQL schema paths: " + String.join(", ", sqlPath));
+        // Crear el procesador de SQL
+        SqlFileProcessorManager sqlManager = new SqlFileProcessorManager();
 
-        CompletableFuture.runAsync(() -> {
-            try {
-                // Simulate some work
-                Thread.sleep(500);
-                System.out.println("✅ Generated model classes at " + basePackage + ".model");
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }, CommandRegistry.getInstance().getExecutor()).join();
+        try {
+            // Obtener todos los archivos SQL (paths explícitos + directorio)
+            CompletableFuture<List<SqlFileContent>> sqlFilesFuture =
+                sqlManager.processSqlPaths(config.getSql().getSchema());
+
+            // Procesar los archivos y generar modelos
+            sqlFilesFuture.thenApply(sqlFiles -> {
+                System.out.println("Found " + sqlFiles.size() + " SQL files to analyze");
+
+                // Aquí iría la lógica real de generación de modelos
+                // Por ahora solo mostramos información
+                sqlFiles.forEach(file -> {
+                    System.out.println("• Analyzing: " + file.getFilePath());
+                    System.out.println("  Tables found: " + file.getSqlStatements());
+                    // Aquí procesaríamos las tablas para generar las clases modelo
+                });
+
+                // Generar las clases modelo (ejemplo simplificado)
+                System.out.println("\n✅ Generated model classes at " + basePackage + ".model");
+                return sqlFiles;
+
+            }).exceptionally(ex -> {
+                System.err.println("❌ Error generating models: " + ex.getMessage());
+                ex.printStackTrace();
+                return null;
+            }).join(); // Esperamos a que termine todo el proceso
+
+        } finally {
+            sqlManager.shutdown();
+        }
     }
 
     private void generateRepositories() {

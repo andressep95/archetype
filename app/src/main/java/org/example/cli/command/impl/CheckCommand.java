@@ -13,60 +13,48 @@ public class CheckCommand implements Command {
 
     @Override
     public void execute(String[] args) {
-        // Get the configuration manager instance
         ConfigurationManager configManager = ConfigurationManager.getInstance();
-
-        // Define the default config file location
         String defaultConfigPath = "arch.yml";
 
         try {
-            // If a config file was specified as an argument, use that instead
             String configPath = args.length > 0 ? args[0] : defaultConfigPath;
             System.out.println("Loading configuration from: " + configPath);
 
-            // Load the configuration asynchronously
-            CompletableFuture<AppConfiguration> configFuture =
-                configManager.loadConfiguration(configPath);
+            CompletableFuture<AppConfiguration> configFuture = configManager.loadConfiguration(configPath);
 
-            // Process configuration and SQL files
             configFuture.thenCompose(config -> {
-                // Display configuration info
                 System.out.println("✅ Configuration loaded successfully");
                 System.out.println("• App builder: " + config.getApplication().getBuild());
                 System.out.println("• SQL Engine: " + config.getSql().getEngine());
 
-                // Display SQL Schema paths
+                // Mostrar información de paths y directorio
                 System.out.println("• SQL Schema paths:");
                 config.getSql().getSchema().getPath().forEach(path -> {
                     System.out.println("    - " + path);
                 });
+                System.out.println("• SQL Schema directory: " + config.getSql().getSchema().getDirectory());
 
                 System.out.println("• Base Package: " + config.getOutput().getBasePackage());
                 System.out.println("• lombok enabled: " + config.getOutput().getOptions().isLombok());
 
-                // Now process the SQL files
                 System.out.println("\nProcessing SQL schema files...");
                 SqlFileProcessorManager sqlManager = new SqlFileProcessorManager();
 
-                // Process SQL files and return the future for composition
-                return sqlManager.processSqlFiles(config.getSql().getSchema().getPath())
+                // Cambiar esto para usar processSqlPaths con el SchemaConfig completo
+                return sqlManager.processSqlPaths(config.getSql().getSchema())
                     .thenApply(results -> {
-                        // Display SQL file processing results
                         System.out.println("\n✅ SQL Schema Analysis:");
                         displaySqlSummary(results);
-
-                        // Return the original config to continue the chain if needed
                         return config;
                     })
                     .whenComplete((result, error) -> {
-                        // Ensure resources are cleaned up
                         sqlManager.shutdown();
                     });
             }).exceptionally(ex -> {
                 System.err.println("❌ Error during processing: " + ex.getMessage());
                 ex.printStackTrace();
                 return null;
-            }).join(); // Wait for everything to complete
+            }).join();
 
         } catch (Exception e) {
             System.err.println("❌ Configuration error: " + e.getMessage());
@@ -98,14 +86,10 @@ public class CheckCommand implements Command {
 
                 // Format the statement with proper indentation
                 String formattedStmt = formatSqlStatement(stmt);
-
+                System.out.println();
                 // Print with indentation
                 System.out.println("      " + formattedStmt);
 
-                // Add a separator between statements except for the last one
-                if (i < content.getSqlStatements().size() - 1) {
-                    System.out.println("\n      -----------------------------\n");
-                }
             }
 
             System.out.println("    ]");

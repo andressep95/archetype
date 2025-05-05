@@ -270,9 +270,10 @@ public class YmlConfigurationLoader {
 
         Map<?, ?> schemaMap = (Map<?, ?>) schemaObj;
         SchemaConfig schemaConfig = new SchemaConfig();
+        boolean hasValidConfiguration = false;
 
+        // Procesar path (archivos individuales)
         Object path = schemaMap.get("path");
-
         if (path != null) {
             // Case 1: path is directly a list
             if (path instanceof List<?>) {
@@ -281,6 +282,7 @@ public class YmlConfigurationLoader {
                     .map(Object::toString)
                     .collect(Collectors.toList());
                 schemaConfig.setPath(stringPaths);
+                hasValidConfiguration = !stringPaths.isEmpty();
             }
             // Case 2: path is a map containing another "path" key with the actual list
             else if (path instanceof Map && ((Map<?, ?>) path).containsKey("path")) {
@@ -293,21 +295,46 @@ public class YmlConfigurationLoader {
                         .map(Object::toString)
                         .collect(Collectors.toList());
                     schemaConfig.setPath(stringPaths);
+                    hasValidConfiguration = !stringPaths.isEmpty();
                 } else if (nestedPath != null) {
                     schemaConfig.setPath(Collections.singletonList(nestedPath.toString()));
+                    hasValidConfiguration = true;
                 }
             }
             // Case 3: path is a single string
             else if (path instanceof String) {
-                schemaConfig.setPath(Collections.singletonList(path.toString()));
+                String pathStr = path.toString().trim();
+                if (!pathStr.isEmpty()) {
+                    schemaConfig.setPath(Collections.singletonList(pathStr));
+                    hasValidConfiguration = true;
+                }
             }
             // Any other case
             else {
-                schemaConfig.setPath(Collections.singletonList(path.toString()));
+                String pathStr = path.toString().trim();
+                if (!pathStr.isEmpty()) {
+                    schemaConfig.setPath(Collections.singletonList(pathStr));
+                    hasValidConfiguration = true;
+                }
             }
         } else {
             // Initialize as an empty list if no value is provided
             schemaConfig.setPath(new ArrayList<>());
+        }
+
+        // Procesar directory (directorio completo)
+        Object directory = schemaMap.get("directory");
+        if (directory != null) {
+            String directoryStr = directory.toString().trim();
+            if (!directoryStr.isEmpty()) {
+                schemaConfig.setDirectory(directoryStr);
+                hasValidConfiguration = true;
+            }
+        }
+
+        // Verificar que al menos una configuración válida esté presente
+        if (!hasValidConfiguration) {
+            throw new ConfigurationException("Se requiere al menos una configuración válida en 'path' o 'directory' dentro de la sección 'schema'");
         }
 
         return schemaConfig;
