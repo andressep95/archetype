@@ -74,6 +74,9 @@ public class PostgresSqlAlterTableStatementExtractor implements SqlAlterTableSta
             return AlterType.DROP_COLUMN;
         } else if (normalized.contains("ALTER COLUMN") || normalized.contains("MODIFY COLUMN")) {
             return AlterType.MODIFY_COLUMN;
+        } else if (normalized.contains("RENAME COLUMN") ||
+            (normalized.contains("RENAME") && normalized.contains("TO") && normalized.contains("COLUMN"))) {
+            return AlterType.RENAME_COLUMN;
         } else if (normalized.contains("ADD CONSTRAINT")) {
             return AlterType.ADD_CONSTRAINT;
         }

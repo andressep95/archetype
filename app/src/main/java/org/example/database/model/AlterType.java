@@ -5,5 +5,6 @@ public enum AlterType {
     DROP_COLUMN,
     MODIFY_COLUMN,
     ADD_CONSTRAINT,
+    RENAME_COLUMN,
     OTHER
 }

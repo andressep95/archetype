@@ -97,9 +97,12 @@ public class AlterTableProcessor {
             .orElseThrow(() -> new IllegalArgumentException(
                 "Columna '" + columnName + "' no existe en tabla '" + table.getTableName() + "'"));
 
-        // Cambio de tipo
+        // Extraer tipo NUEVO con el método corregido
         if (statement.toUpperCase().contains("TYPE")) {
-            column.setColumnType(extractColumnType(statement));
+            String newType = extractColumnType(statement);
+            System.out.println("Changing type of " + columnName + " from " +
+                column.getColumnType() + " to " + newType); // Debug
+            column.setColumnType(newType);
         }
 
         // NOT NULL
@@ -176,14 +179,22 @@ public class AlterTableProcessor {
                     "La columna '" + sourceColumn + "' no existe en la tabla '" + table.getTableName() + "'");
             }
 
-            // Crear la relación
-            RelationMetadata relation = new RelationMetadata();
-            relation.setSourceColumn(sourceColumn);
-            relation.setTargetTable(targetTable);
-            relation.setTargetColumn(targetColumn);
-            relation.setManyToOne(true); // Por defecto para FK
+            // Verificar si la relación ya existe
+            boolean relationExists = table.getRelations().stream()
+                .anyMatch(r -> r.getSourceColumn().equals(sourceColumn) &&
+                    r.getTargetTable().equals(targetTable) &&
+                    r.getTargetColumn().equals(targetColumn));
 
-            table.getRelations().add(relation);
+            if (!relationExists) {
+                // Crear la relación solo si no existe
+                RelationMetadata relation = new RelationMetadata();
+                relation.setSourceColumn(sourceColumn);
+                relation.setTargetTable(targetTable);
+                relation.setTargetColumn(targetColumn);
+                relation.setManyToOne(true);
+
+                table.getRelations().add(relation);
+            }
         }
     }
 
@@ -200,11 +211,23 @@ public class AlterTableProcessor {
 
     // Métodos auxiliares para extraer información
     private String extractColumnType(String statement) {
-        Pattern pattern = Pattern.compile(
-            "(?i)(?:ADD|ALTER)\\s+(?:COLUMN\\s+)?[\"']?\\w+[\"']?\\s+([^\\s(,;]+)",
+        // Patrón mejorado para ALTER COLUMN TYPE
+        Pattern typePattern = Pattern.compile(
+            "(?i)ALTER\\s+COLUMN\\s+[\"']?\\w+[\"']?\\s+TYPE\\s+([^\\s,;]+(?:\\s*\\([^)]+\\))?)",
             Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(statement);
-        return matcher.find() ? matcher.group(1) : "varchar";
+        Matcher typeMatcher = typePattern.matcher(statement);
+
+        if (typeMatcher.find()) {
+            return typeMatcher.group(1);
+        }
+
+        // Patrón para ADD COLUMN
+        Pattern addPattern = Pattern.compile(
+            "(?i)ADD\\s+COLUMN\\s+[\"']?\\w+[\"']?\\s+([^\\s(,;]+(?:\\s*\\([^)]+\\))?)",
+            Pattern.CASE_INSENSITIVE);
+        Matcher addMatcher = addPattern.matcher(statement);
+
+        return addMatcher.find() ? addMatcher.group(1) : "varchar"; // default
     }
 
     private String extractDefaultValue(String statement) {

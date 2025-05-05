@@ -29,11 +29,7 @@ ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 
 -- Establecer que stock no pueda ser negativo
 ALTER TABLE product
-ADD CONSTRAINT chk_product_stock_positive CHECK (stock >= 0);
-
--- Renombrar la columna price a unit_price en product
-ALTER TABLE product
-RENAME COLUMN price TO unit_price;
+ADD CONSTRAINT chk_product_stock_positive CHECK (stock >= 0); -- actualmente no soportado
 
 -- Agregar una clave foránea explícita con nombre propio
 ALTER TABLE product

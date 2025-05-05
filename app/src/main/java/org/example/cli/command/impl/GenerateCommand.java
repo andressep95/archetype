@@ -5,6 +5,9 @@ import org.example.cli.command.CommandRegistry;
 import org.example.configuration.ConfigurationManager;
 import org.example.configuration.model.AppConfiguration;
 import org.example.database.SqlFileProcessorManager;
+import org.example.database.converter.AlterTableProcessor;
+import org.example.database.extractor.SchemaProcessor;
+import org.example.database.model.TableMetadata;
 import org.example.database.parser.SqlFileContent;
 
 import java.nio.file.Path;
@@ -13,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+
+import static org.example.database.SqlFileProcessor.consolidateSqlContents;
 
 public class GenerateCommand implements Command {
 
@@ -89,39 +94,36 @@ public class GenerateCommand implements Command {
         ConfigurationManager configManager = ConfigurationManager.getInstance();
         AppConfiguration config = configManager.getConfiguration();
         String basePackage = config.getOutput().getBasePackage();
+        boolean useLombok = config.getOutput().getOptions().isLombok();
+
+        // 1. Inicializar procesadores
+        SchemaProcessor extractProcessor = new SchemaProcessor();
+        AlterTableProcessor alterProcessor = new AlterTableProcessor();
 
         System.out.println("Generating model classes...");
 
-        // Crear el procesador de SQL
         SqlFileProcessorManager sqlManager = new SqlFileProcessorManager();
 
         try {
-            // Obtener todos los archivos SQL (paths explícitos + directorio)
-            CompletableFuture<List<SqlFileContent>> sqlFilesFuture =
-                sqlManager.processSqlPaths(config.getSql().getSchema());
+            // 2. Obtener y procesar archivos SQL
+            List<SqlFileContent> sqlContents = sqlManager.processSqlPaths(config.getSql().getSchema()).join();
+            String allSqlStatements = consolidateSqlContents(sqlContents);
 
-            // Procesar los archivos y generar modelos
-            sqlFilesFuture.thenApply(sqlFiles -> {
-                System.out.println("Found " + sqlFiles.size() + " SQL files to analyze");
+            // 3. Extraer y procesar metadatos
+            List<TableMetadata> tables = extractProcessor.processSchema(allSqlStatements);
+            System.out.println("PRE-PROCESSOR:");
+            tables.forEach(System.out::println);
 
-                // Aquí iría la lógica real de generación de modelos
-                // Por ahora solo mostramos información
-                sqlFiles.forEach(file -> {
-                    System.out.println("• Analyzing: " + file.getFilePath());
-                    System.out.println("  Tables found: " + file.getSqlStatements());
-                    // Aquí procesaríamos las tablas para generar las clases modelo
-                });
+            // 4. Aplicar alter statements
+            alterProcessor.processAlterStatements(tables, allSqlStatements);
+            System.out.println("\nPOST-PROCESSOR:");
+            tables.forEach(System.out::println);
 
-                // Generar las clases modelo (ejemplo simplificado)
-                System.out.println("\n✅ Generated model classes at " + basePackage + ".model");
-                return sqlFiles;
+            System.out.println("\n✅ Successfully generated " + tables.size() + " model classes");
 
-            }).exceptionally(ex -> {
-                System.err.println("❌ Error generating models: " + ex.getMessage());
-                ex.printStackTrace();
-                return null;
-            }).join(); // Esperamos a que termine todo el proceso
-
+        } catch (Exception e) {
+            System.err.println("❌ Error generating models: " + e.getMessage());
+            e.printStackTrace();
         } finally {
             sqlManager.shutdown();
         }
