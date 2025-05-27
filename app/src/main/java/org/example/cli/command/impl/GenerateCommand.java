@@ -9,6 +9,8 @@ import org.example.database.converter.AlterTableProcessor;
 import org.example.database.extractor.SchemaProcessor;
 import org.example.database.model.TableMetadata;
 import org.example.database.parser.SqlFileContent;
+import org.example.generator.entity.EntityGenerator;
+import org.example.generator.entity.common.GeneratorUtils;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,6 +25,7 @@ public class GenerateCommand implements Command {
 
     private final Map<String, Runnable> subCommands = new HashMap<>();
     private final String DEFAULT_CONFIG_PATH = "arch.yml";
+    private final GeneratorUtils generatorUtils = new GeneratorUtils();
 
     public GenerateCommand() {
         // Register the sub-commands with full names and shorthands
@@ -69,7 +72,7 @@ public class GenerateCommand implements Command {
         }
     }
 
-    private void loadConfiguration() {
+    public void loadConfiguration() {
         try {
             ConfigurationManager configManager = ConfigurationManager.getInstance();
             Path configPath = Paths.get(DEFAULT_CONFIG_PATH);
@@ -83,18 +86,20 @@ public class GenerateCommand implements Command {
             }).exceptionally(ex -> {
                 System.err.println("❌ Failed to load configuration: " + ex.getMessage());
                 return null;
-            }).join(); // Esperar que se complete la carga
+            }).join();
 
         } catch (Exception e) {
             System.err.println("❌ Error loading configuration: " + e.getMessage());
         }
     }
 
-    private void generateModels() {
+    public void generateModels() {
         ConfigurationManager configManager = ConfigurationManager.getInstance();
         AppConfiguration config = configManager.getConfiguration();
+        String build = config.getApplication().getBuild();
         String basePackage = config.getOutput().getBasePackage();
         boolean useLombok = config.getOutput().getOptions().isLombok();
+        EntityGenerator generator = new EntityGenerator(useLombok);
 
         // 1. Inicializar procesadores
         SchemaProcessor extractProcessor = new SchemaProcessor();
@@ -111,13 +116,15 @@ public class GenerateCommand implements Command {
 
             // 3. Extraer y procesar metadatos
             List<TableMetadata> tables = extractProcessor.processSchema(allSqlStatements);
-            System.out.println("PRE-PROCESSOR:");
-            tables.forEach(System.out::println);
 
             // 4. Aplicar alter statements
             alterProcessor.processAlterStatements(tables, allSqlStatements);
-            System.out.println("\nPOST-PROCESSOR:");
-            tables.forEach(System.out::println);
+
+            // 5. Generar clases de modelo
+            for (TableMetadata table : tables) {
+                String entity = generator.generateEntity(table, basePackage);
+                generatorUtils.writeEntityFile(basePackage, table.getTableName(), entity, build);
+            }
 
             System.out.println("\n✅ Successfully generated " + tables.size() + " model classes");
 

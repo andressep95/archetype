@@ -19,6 +19,48 @@ class SqlFileProcessorTest {
     private final SchemaProcessor extractProcessor = new SchemaProcessor();
     private final AlterTableProcessor alterProcessor = new AlterTableProcessor();
 
+    @Test
+    void shouldReadSqlFilesFromResources() throws Exception {
+        // 1. Configurar procesador
+        SqlFileProcessor processor = new SqlFileProcessor();
+
+        // 2. Obtener rutas de los archivos de recursos
+        String[] resourceFiles = {
+            "products.sql"
+        };
+
+        // 3. Procesar cada archivo
+        List<CompletableFuture<SqlFileContent>> futures = List.of(
+            processSqlResource(processor, resourceFiles[0]));
+
+        // 4. Combinar resultados
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+            futures.toArray(new CompletableFuture[0]));
+
+        List<SqlFileContent> results = allFutures.thenApply(v ->
+            futures.stream()
+                .map(CompletableFuture::join)
+                .toList()
+        ).get();
+
+        String statements = SqlFileProcessor.consolidateSqlContents(results);
+
+        List<TableMetadata> tables = extractProcessor.processSchema(statements);
+        System.out.println("PRE-PROCESSOR");
+        tables.forEach(
+            System.out::println
+        );
+
+
+        System.out.println();
+        System.out.println("POST-PROCESSOR");
+        alterProcessor.processAlterStatements(tables, statements);
+        tables.forEach(
+            System.out::println
+                      );
+
+
+    }
 
     @Test
     void shouldProcessSqlFilesFromResources() throws Exception {

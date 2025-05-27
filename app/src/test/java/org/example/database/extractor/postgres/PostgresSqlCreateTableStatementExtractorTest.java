@@ -138,7 +138,7 @@ class PostgresSqlCreateTableStatementExtractorTest {
         """;
 
     private final String TEST_SCHEMA_IMPOSSIBLE = """
-        -- impossible.sql
+        -- impossible2.sql
         -- Schema con casos extremos de PRIMARY KEYs en PostgreSQL
         -- Este archivo contiene casos complejos y desafiantes de definiciones de claves primarias
         
@@ -403,7 +403,9 @@ class PostgresSqlCreateTableStatementExtractorTest {
         List<String> schemas = extractor.extractCreateTableStatements(TEST_SCHEMA_IMPOSSIBLE);
         for (String schema : schemas) {
             String tableName = extractor.extractTableName(schema);
+            List<String> primaryKeys = extractor.extractPrimaryKeyColumns(schema);
             System.out.println("Table Name: " + tableName);
+            System.out.println("Primary Keys: " + primaryKeys);
             List<String> definitions = extractor.extractColumnDefinitions(schema);
             for (String def : definitions) {
                 System.out.println("Column Definition: " + def);
@@ -452,7 +454,7 @@ class PostgresSqlCreateTableStatementExtractorTest {
     // TEST TO EXTRACT THE COLUMN NULLABLE OR/AND UNIQUE
     @Test
     void shouldExtractColumnNullableOrUniqueOrDefault() {
-        List<String> schemas = extractor.extractCreateTableStatements(TEST_RELATION);
+        List<String> schemas = extractor.extractCreateTableStatements(TEST_SCHEMA_IMPOSSIBLE);
 
         for (String schema : schemas) {
             String tableName = extractor.extractTableName(schema);
@@ -470,10 +472,12 @@ class PostgresSqlCreateTableStatementExtractorTest {
                 boolean columnUnique = extractor.isUniqueColumn(def, schema);
                 String defaultValue = extractor.extractDefaultValue(def);
 
-                System.out.println("Column Name: " + columnName + " it´s type: " + columnType);
+                System.out.println("Column Name: " + columnName);
+                System.out.println("Column Type: " + columnType);
                 System.out.println("Column Not Null: " + columnNotNull);
                 System.out.println("Column Unique: " + columnUnique);
                 System.out.println("Column Default Value: " + defaultValue);
+                System.out.println();
             }
             System.out.println();
         }

@@ -34,7 +34,6 @@ public class EntityGenerator {
         importGenerator.generateImports(table, entityBuilder);
 
         // 2. Generar anotaciones de clase
-        //generateClassAnnotations(table, entityBuilder);
         classAnnotationGenerator.generateClassAnnotations(table, entityBuilder);
 
         // 3. Generar declaración de clase
