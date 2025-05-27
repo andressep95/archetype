@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 
 import org.example.cli.command.impl.CheckCommand;
 import org.example.cli.command.impl.GenerateCommand;
+import org.example.cli.command.impl.InitCommand;
 import org.example.cli.command.impl.VersionCommand;
 
 public class CommandRegistry {
@@ -40,12 +41,10 @@ public class CommandRegistry {
     }
 
     public void registerDefaultCommands() {
+        registerCommand("init", "i", new InitCommand());
         registerCommand("check", "c", new CheckCommand());
-        //registerCommand("status", "s", new StatusCommand());
         registerCommand("generate", "g", new GenerateCommand());
-        //registerCommand("process", "p", new ProcessCommand());
         registerCommand("version", "v", new VersionCommand());
-        //registerCommand("help", "h", new HelpCommand());
     }
 
     public ExecutorService getExecutor() {

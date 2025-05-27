@@ -9,6 +9,7 @@ import org.example.database.converter.AlterTableProcessor;
 import org.example.database.extractor.SchemaProcessor;
 import org.example.database.model.TableMetadata;
 import org.example.database.parser.SqlFileContent;
+import org.example.generator.docs.DocGenerator;
 import org.example.generator.entity.EntityGenerator;
 import org.example.generator.entity.common.GeneratorUtils;
 
@@ -29,6 +30,9 @@ public class GenerateCommand implements Command {
 
     public GenerateCommand() {
         // Register the sub-commands with full names and shorthands
+        subCommands.put("init", this::generateDocs);
+        subCommands.put("i", this::generateDocs);
+
         subCommands.put("models", this::generateModels);
         subCommands.put("m", this::generateModels);
 
@@ -91,6 +95,11 @@ public class GenerateCommand implements Command {
         } catch (Exception e) {
             System.err.println("❌ Error loading configuration: " + e.getMessage());
         }
+    }
+
+    public void generateDocs() {
+        DocGenerator dg = new DocGenerator();
+        dg.run();
     }
 
     public void generateModels() {
