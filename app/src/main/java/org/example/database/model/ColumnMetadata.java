@@ -5,8 +5,6 @@ public class ColumnMetadata {
     private String columnType;
     private boolean isNotNull;
     private boolean isUnique;
-    private String indexName;
-    private boolean hasIndex;
     private String defaultValue;
 
     // Constructores
@@ -18,8 +16,6 @@ public class ColumnMetadata {
         this.columnType = columnType;
         this.isNotNull = false;
         this.isUnique = false;
-        this.hasIndex = false;
-        this.indexName = null;
     }
 
     // Getters y Setters
@@ -63,32 +59,14 @@ public class ColumnMetadata {
         this.defaultValue = defaultValue;
     }
 
-    public String getIndexName() {
-        return indexName;
-    }
-
-    public void setIndexName(String indexName) {
-        this.indexName = indexName;
-    }
-
-    public boolean isHasIndex() {
-        return hasIndex;
-    }
-
-    public void setHasIndex(boolean hasIndex) {
-        this.hasIndex = hasIndex;
-    }
-
     @Override
     public String toString() {
         return "ColumnMetadata{" +
-            "columnName='" + columnName + '\'' +
-            ", columnType='" + columnType + '\'' +
-            ", isNotNull=" + isNotNull +
-            ", isUnique=" + isUnique +
-            ", indexName='" + indexName + '\'' +
-            ", hasIndex=" + hasIndex +
-            ", defaultValue='" + defaultValue + '\'' +
-            '}';
+               "columnName='" + columnName + '\'' +
+               ", columnType='" + columnType + '\'' +
+               ", isNotNull=" + isNotNull +
+               ", isUnique=" + isUnique +
+               ", defaultValue='" + defaultValue + '\'' +
+               '}';
     }
 }

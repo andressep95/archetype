@@ -7,6 +7,7 @@ import org.example.configuration.model.AppConfiguration;
 import org.example.database.SqlFileProcessorManager;
 import org.example.database.converter.AlterTableProcessor;
 import org.example.database.extractor.SchemaProcessor;
+import org.example.database.extractor.index.CreateIndexProcessor;
 import org.example.database.model.TableMetadata;
 import org.example.database.parser.SqlFileContent;
 import org.example.generator.docs.DocGenerator;
@@ -113,6 +114,7 @@ public class GenerateCommand implements Command {
         // 1. Inicializar procesadores
         SchemaProcessor extractProcessor = new SchemaProcessor();
         AlterTableProcessor alterProcessor = new AlterTableProcessor();
+        CreateIndexProcessor indexProcessor = new CreateIndexProcessor();
 
         System.out.println("Generating model classes...");
 
@@ -128,6 +130,7 @@ public class GenerateCommand implements Command {
 
             // 4. Aplicar alter statements
             alterProcessor.processAlterStatements(tables, allSqlStatements);
+            indexProcessor.processCreateIndexStatements(tables, allSqlStatements);
 
             // 5. Generar clases de modelo
             for (TableMetadata table : tables) {

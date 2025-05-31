@@ -2,6 +2,11 @@ Claro, aquí tienes el bloque en formato **Markdown** listo para documentación 
 
 ## Comandos útiles para instalar y manejar la herramienta `arc`
 
+### 📦 Actualizar build
+```bash
+./gradlew clean build
+```
+
 ### 📦 Mover archivo
 ```bash
 sudo mv app/build/libs/arc.jar /usr/local/bin/arc

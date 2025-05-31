@@ -69,24 +69,6 @@ public class AlterTableProcessor {
         table.getColumns().add(column);
     }
 
-    private void processDropColumn(TableMetadata table, TableAlteration alteration) {
-        String columnName = alteration.getTargetColumn().toLowerCase();
-
-        // Eliminar la columna
-        boolean removed = table.getColumns().removeIf(c -> c.getColumnName().equalsIgnoreCase(columnName));
-
-        if (!removed) {
-            throw new IllegalArgumentException(
-                "La columna '" + columnName + "' no existe en la tabla '" + table.getTableName() + "'");
-        }
-
-        // Eliminar de primary keys si estaba
-        table.getPrimaryKeys().removeIf(pk -> pk.equalsIgnoreCase(columnName));
-
-        // Eliminar relaciones que usaban esta columna
-        table.getRelations().removeIf(r -> r.getSourceColumn().equalsIgnoreCase(columnName));
-    }
-
     private void processModifyColumn(TableMetadata table, TableAlteration alteration) {
         String columnName = alteration.getTargetColumn().toLowerCase();
         String statement = alteration.getFullStatement();

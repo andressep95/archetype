@@ -74,7 +74,7 @@ public class ImportGenerator {
             }
         }
 
-        if (table.getColumns().stream().anyMatch(ColumnMetadata::isUnique)) {
+        if (table.getColumns().stream().anyMatch(ColumnMetadata::isUnique) || !table.getIndexes().isEmpty()) {
             imports.add("import jakarta.persistence.UniqueConstraint;");
             imports.add("import jakarta.persistence.Index;");
         }

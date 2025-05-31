@@ -42,3 +42,25 @@ ADD CONSTRAINT fk_product_category FOREIGN KEY (category_id) REFERENCES category
 -- Eliminar la columna description de category (por si quieres ejemplos de DROP)
 ALTER TABLE category
 DROP COLUMN description;
+
+-- =============================
+-- ÍNDICES agregados
+-- =============================
+
+-- Índice simple sobre product.name
+CREATE INDEX idx_product_name ON product(name);
+
+-- Índice simple sobre product.unit_price
+CREATE INDEX idx_product_unit_price ON product(unit_price);
+
+-- Índice compuesto sobre product.name y stock
+CREATE INDEX idx_product_name_stock ON product(name, stock);
+
+-- Índice simple sobre product.created_at
+CREATE INDEX idx_product_created_at ON product(created_at);
+
+-- Índice en category.name (ya tiene un UNIQUE pero lo hacemos explícito como índice también)
+CREATE UNIQUE INDEX idx_category_name_unique ON category(name);
+
+-- Índice compuesto sobre product.category_id y created_at
+CREATE INDEX idx_product_category_created ON product(category_id, created_at);

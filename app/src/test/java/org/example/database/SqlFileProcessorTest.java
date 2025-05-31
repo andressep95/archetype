@@ -2,6 +2,7 @@ package org.example.database;
 
 import org.example.database.converter.AlterTableProcessor;
 import org.example.database.extractor.SchemaProcessor;
+import org.example.database.extractor.index.CreateIndexProcessor;
 import org.example.database.model.TableMetadata;
 import org.example.database.parser.SqlFileContent;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ class SqlFileProcessorTest {
 
     private final SchemaProcessor extractProcessor = new SchemaProcessor();
     private final AlterTableProcessor alterProcessor = new AlterTableProcessor();
+    private final CreateIndexProcessor indexProcessor = new CreateIndexProcessor();
 
     @Test
     void shouldReadSqlFilesFromResources() throws Exception {
@@ -59,7 +61,12 @@ class SqlFileProcessorTest {
             System.out::println
                       );
 
-
+        System.out.println();
+        System.out.println("POST-INDEX");
+        indexProcessor.processCreateIndexStatements(tables, statements);
+        tables.forEach(
+            System.out::println
+                      );
     }
 
     @Test

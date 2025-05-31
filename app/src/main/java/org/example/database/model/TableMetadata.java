@@ -5,6 +5,7 @@ import java.util.List;
 
 public class TableMetadata {
     private String tableName;
+    private List<TableIndexData> indexes = new ArrayList<>();
     private List<ColumnMetadata> columns = new ArrayList<>();
     private List<String> primaryKeys = new ArrayList<>();
     private List<RelationMetadata> relations = new ArrayList<>();
@@ -13,9 +14,9 @@ public class TableMetadata {
     public TableMetadata() {
     }
 
-    public TableMetadata(String tableName, List<ColumnMetadata> columns, List<String> primaryKeys,
-                         List<RelationMetadata> relations) {
+    public TableMetadata(String tableName, List<TableIndexData> indexes, List<ColumnMetadata> columns, List<String> primaryKeys, List<RelationMetadata> relations) {
         this.tableName = tableName;
+        this.indexes = indexes;
         this.columns = columns;
         this.primaryKeys = primaryKeys;
         this.relations = relations;
@@ -27,6 +28,14 @@ public class TableMetadata {
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
+    }
+
+    public List<TableIndexData> getIndexes() {
+        return indexes;
+    }
+
+    public void setIndexes(List<TableIndexData> indexes) {
+        this.indexes = indexes;
     }
 
     public List<ColumnMetadata> getColumns() {
@@ -56,10 +65,11 @@ public class TableMetadata {
     @Override
     public String toString() {
         return "TableMetadata{" +
-            "tableName='" + tableName + '\'' +
-            ", columns=" + columns +
-            ", primaryKeys=" + primaryKeys +
-            ", relations=" + relations +
-            '}';
+               "tableName='" + tableName + '\'' +
+               ", indexes=" + indexes +
+               ", columns=" + columns +
+               ", primaryKeys=" + primaryKeys +
+               ", relations=" + relations +
+               '}';
     }
 }
