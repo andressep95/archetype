@@ -30,7 +30,7 @@ public enum PostgreSQLToJavaType {
     BOOL("Boolean"),
 
     // Binarios
-    BYTEA("byte[]"),
+    BYTE("byte[]"),
 
     // UUID
     UUID("UUID");
