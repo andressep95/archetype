@@ -39,15 +39,15 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-            output_name: sqlift-linux-x64
+            output_name: arc-linux-x64
             native_opts: "--static --no-fallback"
           - os: macos-13
             arch: x64
-            output_name: sqlift-macos-x64
+            output_name: arc-macos-x64
             native_opts: "--no-fallback"
           - os: macos-14
             arch: arm64
-            output_name: sqlift-macos-arm64
+            output_name: arc-macos-arm64
             native_opts: "--no-fallback"
     steps:
       - uses: actions/checkout@v3
@@ -94,9 +94,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/sqlift-linux-x64/sqlift-linux-x64
-            artifacts/sqlift-macos-x64/sqlift-macos-x64
-            artifacts/sqlift-macos-arm64/sqlift-macos-arm64
+            artifacts/arc-linux-x64/arc-linux-x64
+            artifacts/arc-macos-x64/arc-macos-x64
+            artifacts/arc-macos-arm64/arc-macos-arm64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
