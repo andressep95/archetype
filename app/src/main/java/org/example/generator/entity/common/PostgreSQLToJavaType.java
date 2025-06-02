@@ -2,15 +2,15 @@ package org.example.generator.entity.common;
 
 public enum PostgreSQLToJavaType {
     // Numéricos
-    SERIAL("Long"),
+    SERIAL("Integer"),
     BIGSERIAL("Long"),
     SMALLSERIAL("Short"),
-    INT("Long"),
+    INT("Integer"),
     INTEGER("Integer"),
     BIGINT("Long"),
     SMALLINT("Short"),
-    DECIMAL("Double"),
-    NUMERIC("Double"),
+    DECIMAL("BigDecimal"),
+    NUMERIC("BigDecimal"),
     REAL("Float"),
     DOUBLE("Double"),
 

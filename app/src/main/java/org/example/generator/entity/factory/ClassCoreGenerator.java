@@ -128,6 +128,19 @@ public class ClassCoreGenerator {
             }
         }
 
+        // Si es parte de la clave primaria
+        if (primaryKeys.contains(column.getColumnName())) {
+            builder.append("    @Id\n");
+            if (column.getColumnType().toUpperCase().contains("UUID")) {
+                builder.append("    @GeneratedValue(strategy = GenerationType.UUID)\n");
+            }
+        }
+
+        // Si es de tipo BYTEA
+        if (column.getColumnType().equalsIgnoreCase("BYTEA")) {
+            builder.append("    @Lob\n");
+        }
+
         // Generar @Column con sus propiedades
         builder.append("    @Column(name = \"").append(column.getColumnName()).append("\"");
 
