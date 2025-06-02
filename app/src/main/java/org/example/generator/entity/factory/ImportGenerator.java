@@ -74,9 +74,18 @@ public class ImportGenerator {
             }
         }
 
-        if (table.getColumns().stream().anyMatch(ColumnMetadata::isUnique) || !table.getIndexes().isEmpty()) {
+        if (table.getColumns().stream().anyMatch(ColumnMetadata::isUnique)) {
             imports.add("import jakarta.persistence.UniqueConstraint;");
+        }
+
+        if (!table.getIndexes().isEmpty()) {
             imports.add("import jakarta.persistence.Index;");
+        }
+
+        // import java.math.BigDecimal;
+        if (table.getColumns().stream()
+            .anyMatch(column -> "BigDecimal".equalsIgnoreCase(column.getColumnType()))) {
+            imports.add("import java.math.BigDecimal;");
         }
 
         for (ColumnMetadata column : table.getColumns()) {

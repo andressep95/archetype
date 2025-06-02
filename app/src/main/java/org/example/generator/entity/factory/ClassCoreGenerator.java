@@ -126,11 +126,6 @@ public class ClassCoreGenerator {
             if (column.getColumnType().toUpperCase().contains("SERIAL")) {
                 builder.append("    @GeneratedValue(strategy = GenerationType.IDENTITY)\n");
             }
-        }
-
-        // Si es parte de la clave primaria
-        if (primaryKeys.contains(column.getColumnName())) {
-            builder.append("    @Id\n");
             if (column.getColumnType().toUpperCase().contains("UUID")) {
                 builder.append("    @GeneratedValue(strategy = GenerationType.UUID)\n");
             }
