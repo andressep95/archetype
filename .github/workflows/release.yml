@@ -26,8 +26,8 @@ jobs:
       - name: Upload JAR Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: app-jar
-          path: app/build/libs/app.jar
+          name: arc-jar
+          path: app/build/libs/arc.jar
           if-no-files-found: error
 
   build-native:
@@ -55,7 +55,7 @@ jobs:
       - name: Download JAR
         uses: actions/download-artifact@v3
         with:
-          name: app-jar
+          name: arc-jar
           path: app/build/libs/
 
       - name: Set up GraalVM
@@ -68,7 +68,7 @@ jobs:
 
       - name: Build Native Image
         run: |
-          native-image -jar app/build/libs/app.jar -H:Name=${{ matrix.output_name }} ${{ matrix.native_opts }}
+          native-image -jar app/build/libs/arc.jar -H:Name=${{ matrix.output_name }} ${{ matrix.native_opts }}
 
       - name: Strip Binary
         run: |
@@ -109,7 +109,7 @@ jobs:
       - name: Download JAR
         uses: actions/download-artifact@v3
         with:
-          name: app-jar
+          name: arc-jar
           path: app/build/libs/
 
       - name: Set up Docker Buildx
