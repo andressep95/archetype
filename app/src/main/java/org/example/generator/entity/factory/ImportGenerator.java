@@ -78,14 +78,21 @@ public class ImportGenerator {
             imports.add("import jakarta.persistence.UniqueConstraint;");
         }
 
-        if (!table.getIndexes().isEmpty()) {
-            imports.add("import jakarta.persistence.Index;");
-        }
+        boolean needsIndexImport = table.getIndexes().stream()
+            .anyMatch(index -> {
 
-        // import java.math.BigDecimal;
-        if (table.getColumns().stream()
-            .anyMatch(column -> "BigDecimal".equalsIgnoreCase(column.getColumnType()))) {
-            imports.add("import java.math.BigDecimal;");
+                if (index.getTargetColumnName().size() == 1) {
+                    String columnName = index.getTargetColumnName().get(0);
+                    boolean isColumnUnique = table.getColumns().stream()
+                        .filter(col -> col.getColumnName().equals(columnName))
+                        .anyMatch(ColumnMetadata::isUnique);
+                    return !isColumnUnique;
+                }
+                return true;
+            });
+
+        if (needsIndexImport) {
+            imports.add("import jakarta.persistence.Index;");
         }
 
         for (ColumnMetadata column : table.getColumns()) {

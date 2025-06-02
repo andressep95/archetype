@@ -60,8 +60,8 @@ public enum PostgreSQLToJavaType {
     public static String getImportStatement(String postgresType) {
         String javaType = getJavaType(postgresType);
         switch (javaType) {
-            // case "BigDecimal":
-            // return "import java.math.BigDecimal;";
+            case "BigDecimal":
+                return "import java.math.BigDecimal;";
             case "LocalDate":
                 return "import java.time.LocalDate;";
             case "LocalTime":
