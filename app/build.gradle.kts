@@ -56,8 +56,3 @@ tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
-tasks.named<Jar>("jar") {
-    archiveBaseName.set("arc")
-    archiveVersion.set("")
-    archiveClassifier.set("")
-}

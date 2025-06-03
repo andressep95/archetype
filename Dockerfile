@@ -10,7 +10,7 @@ ARG VERSION=latest
 LABEL version="${VERSION}"
 
 # Copiar el JAR
-COPY app/build/libs/arc.jar /app.jar
+COPY app/build/libs/app.jar /app.jar
 
 # Definir el volumen en /workspace para mantener compatibilidad
 VOLUME /workspace
