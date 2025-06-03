@@ -26,6 +26,16 @@ jobs:
       - name: Debug Build Output
         run: ls -R app/build/libs/
 
+      - name: Assert JAR files exist
+        run: |
+          ls -l app/build/libs/
+          shopt -s nullglob
+          jars=(app/build/libs/*.jar)
+          if [ ${#jars[@]} -eq 0 ]; then
+            echo "No JAR files found in app/build/libs/"
+            exit 1
+          fi
+
       - name: Upload JAR Artifact
         uses: actions/upload-artifact@v3
         with:
