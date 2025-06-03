@@ -23,6 +23,9 @@ jobs:
       - name: Build JAR with Gradle
         run: ./gradlew clean build -x test
 
+      - name: Debug Build Output
+        run: ls -R app/build/libs/
+
       - name: Upload JAR Artifact
         uses: actions/upload-artifact@v3
         with:
