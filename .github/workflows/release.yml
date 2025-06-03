@@ -35,6 +35,12 @@ jobs:
           echo "Archivos JAR encontrados:"
           find app/build/libs/ -name '*.jar' -exec ls -l {} \; || echo "No se encontraron archivos .jar"
 
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: app/build/libs/app.jar
+
   build-native:
     name: Build Native Binaries
     needs: build-jar
