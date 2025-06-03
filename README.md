@@ -17,13 +17,13 @@ operativo.
 #### macOS (Apple Silicon o Intel):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/andressep95/archetype/main/install-macos.sh | bash
+curl -fsSL https://raw.githubusercontent.com/andressep95/archetype/main/macos-install.sh | bash
 ```
 
 #### Linux:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/andressep95/archetype/main/install-linux.sh | bash
+curl -fsSL https://raw.githubusercontent.com/andressep95/archetype/main/linux-install.sh | bash
 ```
 
 ### Descripción:
