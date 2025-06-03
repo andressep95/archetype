@@ -21,7 +21,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build JAR with Gradle
-        run: ./gradlew clean build -x test
+        run: ./gradlew clean build -x test --info --stacktrace
 
       - name: Debug Build Output
         run: ls -R app/build/libs/
