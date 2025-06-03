@@ -30,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: app-jar
-          path: app/build/libs/app.jar
+          path: app/build/libs/*.jar
           if-no-files-found: error
 
   build-native:
