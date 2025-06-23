@@ -7,7 +7,9 @@ CREATE TABLE student (
 CREATE TABLE course (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100),
-    description TEXT
+    description TEXT,
+    CONSTRAINT unique_course_name_description UNIQUE (name, description)
+
 );
 
 CREATE TABLE enrollment (

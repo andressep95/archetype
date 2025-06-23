@@ -1,6 +1,7 @@
 package org.example.database.extractor;
 
 import org.example.database.model.RelationMetadata;
+import org.example.database.model.TableConstraintData;
 
 import java.util.List;
 
@@ -16,5 +17,6 @@ public interface SqlCreateTableStatementExtractor {
     String extractDefaultValue(String columnDefinition);
     List<String> extractPrimaryKeyColumns(String sql);
     List<RelationMetadata> extractTableRelations(String sql);
+    List<TableConstraintData> extractUniqueConstraints(String sql);
 
 }

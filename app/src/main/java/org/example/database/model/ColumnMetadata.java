@@ -4,7 +4,6 @@ public class ColumnMetadata {
     private String columnName;
     private String columnType;
     private boolean isNotNull;
-    private boolean isUnique;
     private String defaultValue;
 
     // Constructores
@@ -15,7 +14,6 @@ public class ColumnMetadata {
         this.columnName = columnName;
         this.columnType = columnType;
         this.isNotNull = false;
-        this.isUnique = false;
     }
 
     // Getters y Setters
@@ -43,14 +41,6 @@ public class ColumnMetadata {
         isNotNull = notNull;
     }
 
-    public boolean isUnique() {
-        return isUnique;
-    }
-
-    public void setUnique(boolean unique) {
-        isUnique = unique;
-    }
-
     public String getDefaultValue() {
         return defaultValue;
     }
@@ -65,7 +55,6 @@ public class ColumnMetadata {
                "columnName='" + columnName + '\'' +
                ", columnType='" + columnType + '\'' +
                ", isNotNull=" + isNotNull +
-               ", isUnique=" + isUnique +
                ", defaultValue='" + defaultValue + '\'' +
                '}';
     }

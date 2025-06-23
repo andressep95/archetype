@@ -1,6 +1,7 @@
 package org.example.database.extractor.postgres;
 
 import org.example.database.model.RelationMetadata;
+import org.example.database.model.TableConstraintData;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -14,10 +15,10 @@ class PostgresSqlCreateTableStatementExtractorTest {
 
     private final String TEST_SCHEMA = """
             -- Tabla 1: PRIMARY KEY simple básica
-            CREATE TABLE IF NOT EXISTS users (
+            CREATE TABLE users (
                 id INTEGER PRIMARY KEY,
                 username VARCHAR(50) NOT NULL,
-                email VARCHAR(100)
+                email VARCHAR(100) UNIQUE
             );
         
             -- Tabla 2: PRIMARY KEY con SERIAL
@@ -31,7 +32,7 @@ class PostgresSqlCreateTableStatementExtractorTest {
             -- Tabla 3: PRIMARY KEY con CONSTRAINT nombrado
             CREATE TABLE categories (
                 category_id INTEGER CONSTRAINT pk_category PRIMARY KEY,
-                name VARCHAR(50),
+                name VARCHAR(50) UNIQUE,
                 description TEXT
             );
         
@@ -454,7 +455,7 @@ class PostgresSqlCreateTableStatementExtractorTest {
     // TEST TO EXTRACT THE COLUMN NULLABLE OR/AND UNIQUE
     @Test
     void shouldExtractColumnNullableOrUniqueOrDefault() {
-        List<String> schemas = extractor.extractCreateTableStatements(TEST_SCHEMA_IMPOSSIBLE);
+        List<String> schemas = extractor.extractCreateTableStatements(TEST_SCHEMA);
 
         for (String schema : schemas) {
             String tableName = extractor.extractTableName(schema);
@@ -478,6 +479,24 @@ class PostgresSqlCreateTableStatementExtractorTest {
                 System.out.println("Column Unique: " + columnUnique);
                 System.out.println("Column Default Value: " + defaultValue);
                 System.out.println();
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
+    void testExtractUniqueConstraintsFromSchemas() {
+        List<String> schemas = extractor.extractCreateTableStatements(TEST_SCHEMA);
+        for (String schema : schemas) {
+            String tableName = extractor.extractTableName(schema);
+            List<TableConstraintData> uniqueConstraints = extractor.extractUniqueConstraints(schema);
+
+            System.out.println("Schema: " + schema);
+            System.out.println("Table Name: " + tableName);
+            System.out.println("Unique Constraints: " + uniqueConstraints);
+            for (TableConstraintData constraint : uniqueConstraints) {
+                System.out.println("Constraint Name: " + constraint.getConstraintName());
+                System.out.println("Target Columns: " + constraint.getTargetColumnNames());
             }
             System.out.println();
         }

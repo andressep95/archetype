@@ -2,11 +2,14 @@ package org.example.database.extractor.postgres;
 
 import org.example.database.extractor.SqlCreateTableStatementExtractor;
 import org.example.database.model.RelationMetadata;
+import org.example.database.model.TableConstraintData;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class PostgresSqlCreateTableStatementExtractor implements SqlCreateTableStatementExtractor {
 
@@ -239,7 +242,6 @@ public class PostgresSqlCreateTableStatementExtractor implements SqlCreateTableS
         return primaryKeys;
     }
 
-
     @Override
     public List<RelationMetadata> extractTableRelations(String sql) {
         List<RelationMetadata> relations = new ArrayList<>();
@@ -342,6 +344,90 @@ public class PostgresSqlCreateTableStatementExtractor implements SqlCreateTableS
         return validatedRelations;
     }
 
+    @Override
+    public List<TableConstraintData> extractUniqueConstraints(String fullTableDDL) {
+        List<TableConstraintData> uniqueConstraints = new ArrayList<>();
+        String cleanSql = fullTableDDL.replaceAll("--[^\\n]*", "")
+            .replaceAll("/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", " ");
+
+        String tableName = extractTableName(cleanSql);
+        if (tableName == null || tableName.isEmpty()) {
+            return uniqueConstraints;
+        }
+
+        Pattern tableContentPattern = Pattern.compile(
+            "CREATE\\s+TABLE\\s+[\"\\w.-]+\\s*\\((?<content>.*?)\\);",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL
+                                                     );
+        Matcher tableContentMatcher = tableContentPattern.matcher(cleanSql);
+        String tableDefinitionBlock = "";
+        if (tableContentMatcher.find()) {
+            tableDefinitionBlock = tableContentMatcher.group("content");
+        } else {
+            return uniqueConstraints;
+        }
+
+        // 1. Extraer restricciones UNIQUE en línea de las definiciones de columna
+        List<String> columnDefinitions = extractColumnDefinitions(fullTableDDL); // Este método DEBE haber sido ajustado previamente para NO filtrar la línea 'email UNIQUE'
+
+        for (String columnDef : columnDefinitions) {
+            // Usamos el nuevo método auxiliar para construir la restricción si aplica
+            TableConstraintData inlineConstraint = buildInlineUniqueConstraint(columnDef, tableName);
+            if (inlineConstraint != null) {
+                if (!uniqueConstraints.contains(inlineConstraint)) {
+                    uniqueConstraints.add(inlineConstraint);
+                }
+            }
+        }
+
+        // 2. Extraer restricciones UNIQUE definidas a nivel de tabla
+        Pattern tableUniquePattern = Pattern.compile(
+            "(?:CONSTRAINT\\s+\"?(?<constraintName>[\\w.-]+)\"?\\s+)?UNIQUE\\s*\\((?<columns>[^)]+)\\)",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL
+                                                    );
+        Matcher tableMatcher = tableUniquePattern.matcher(tableDefinitionBlock);
+
+        while (tableMatcher.find()) {
+            String constraintName = tableMatcher.group("constraintName");
+            String columnsGroup = tableMatcher.group("columns");
+
+            List<String> columns = Arrays.stream(columnsGroup.split(","))
+                .map(s -> cleanName(s.trim()))
+                .collect(Collectors.toList());
+
+            if (constraintName == null || constraintName.isEmpty()) {
+                String generatedName = "uk_" + tableName.toLowerCase();
+                for (String col : columns) {
+                    generatedName += "_" + col.toLowerCase();
+                }
+                constraintName = generatedName;
+            } else {
+                constraintName = cleanName(constraintName);
+            }
+
+            TableConstraintData newConstraint = new TableConstraintData(tableName, constraintName, columns);
+            if (!uniqueConstraints.contains(newConstraint)) { // Esto sigue dependiendo de equals/hashCode en TableConstraintData
+                uniqueConstraints.add(newConstraint);
+            }
+        }
+
+        return uniqueConstraints;
+    }
+
+    private TableConstraintData buildInlineUniqueConstraint(String columnDefinition, String tableName) {
+        // Reutilizamos la lógica del paso 1 de isUniqueColumn
+        Pattern inlineUniquePattern = Pattern.compile("\\bUNIQUE\\b", Pattern.CASE_INSENSITIVE);
+        if (inlineUniquePattern.matcher(columnDefinition).find()) {
+            String columnName = extractColumnName(columnDefinition); // Reutiliza tu método existente
+            if (columnName != null) {
+                List<String> columns = Arrays.asList(cleanName(columnName)); // Asegura que el nombre esté limpio
+                String constraintName = "uk_" + tableName.toLowerCase() + "_" + cleanName(columnName).toLowerCase();
+                return new TableConstraintData(tableName, constraintName, columns);
+            }
+        }
+        return null;
+    }
+
     // Método auxiliar para procesar matches de relaciones
     private void processMatchForRelations(Matcher matcher, List<RelationMetadata> relations, String cleanSql) {
         String[] sourceColumns = matcher.group(1).split(",");
@@ -378,4 +464,16 @@ public class PostgresSqlCreateTableStatementExtractor implements SqlCreateTableS
         return columnUniquePattern.matcher(sql).find() || constraintUniquePattern.matcher(sql).find();
     }
 
+    /**
+     * Método auxiliar para limpiar los nombres de columnas o constraints.
+     * Consolida lógicas de limpieza para evitar repetición.
+     */
+    private String cleanName(String name) {
+        if (name == null) return null;
+        String cleaned = name.trim().replaceAll("^\"|\"$", ""); // Eliminar comillas dobles
+        cleaned = cleaned.replaceAll("[^a-zA-Z0-9_]", "_"); // Reemplazar caracteres no alfanuméricos por guiones bajos
+        cleaned = cleaned.replaceAll("_+", "_"); // Consolidar guiones bajos consecutivos
+        cleaned = cleaned.replaceAll("^_+|_+$", ""); // Eliminar guiones bajos al inicio o final
+        return cleaned;
+    }
 }

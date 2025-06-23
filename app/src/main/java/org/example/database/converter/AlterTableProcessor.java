@@ -63,7 +63,6 @@ public class AlterTableProcessor {
         String statement = alteration.getFullStatement();
         column.setColumnType(extractColumnType(statement));
         column.setNotNull(statement.toUpperCase().contains("NOT NULL"));
-        column.setUnique(statement.toUpperCase().contains("UNIQUE"));
         column.setDefaultValue(extractDefaultValue(statement));
 
         table.getColumns().add(column);
@@ -109,9 +108,9 @@ public class AlterTableProcessor {
             processPrimaryKeyConstraint(table, alteration);
         } else if (statement.contains("FOREIGN KEY")) {
             processForeignKeyConstraint(table, alteration);
-        } else if (statement.contains("UNIQUE")) {
+        } /*else if (statement.contains("UNIQUE")) {
             processUniqueConstraint(table, alteration);
-        }
+        }*/
     }
 
     private void processPrimaryKeyConstraint(TableMetadata table, TableAlteration alteration) {
@@ -180,6 +179,7 @@ public class AlterTableProcessor {
         }
     }
 
+    /*
     private void processUniqueConstraint(TableMetadata table, TableAlteration alteration) {
         String statement = alteration.getFullStatement();
         String columnName = alteration.getTargetColumn().toLowerCase();
@@ -190,6 +190,7 @@ public class AlterTableProcessor {
             .findFirst()
             .ifPresent(column -> column.setUnique(true));
     }
+    */
 
     // Métodos auxiliares para extraer información
     private String extractColumnType(String statement) {

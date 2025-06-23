@@ -9,17 +9,20 @@ public class TableMetadata {
     private List<ColumnMetadata> columns = new ArrayList<>();
     private List<String> primaryKeys = new ArrayList<>();
     private List<RelationMetadata> relations = new ArrayList<>();
+    private List<TableConstraintData> uniqueConstraints = new ArrayList<>();
+
 
     // Constructores, getters, setters
     public TableMetadata() {
     }
 
-    public TableMetadata(String tableName, List<TableIndexData> indexes, List<ColumnMetadata> columns, List<String> primaryKeys, List<RelationMetadata> relations) {
+    public TableMetadata(String tableName, List<TableIndexData> indexes, List<ColumnMetadata> columns, List<String> primaryKeys, List<RelationMetadata> relations, List<TableConstraintData> uniqueConstraints) {
         this.tableName = tableName;
         this.indexes = indexes;
         this.columns = columns;
         this.primaryKeys = primaryKeys;
         this.relations = relations;
+        this.uniqueConstraints = uniqueConstraints;
     }
 
     public String getTableName() {
@@ -62,14 +65,23 @@ public class TableMetadata {
         this.relations = relations;
     }
 
+    public List<TableConstraintData> getUniqueConstraints() {
+        return uniqueConstraints;
+    }
+
+    public void setUniqueConstraints(List<TableConstraintData> uniqueConstraints) {
+        this.uniqueConstraints = uniqueConstraints;
+    }
+
     @Override
     public String toString() {
         return "TableMetadata{" +
-               "tableName='" + tableName + '\'' +
-               ", indexes=" + indexes +
-               ", columns=" + columns +
-               ", primaryKeys=" + primaryKeys +
-               ", relations=" + relations +
-               '}';
+            "tableName='" + tableName + '\'' +
+            ", indexes=" + indexes +
+            ", columns=" + columns +
+            ", primaryKeys=" + primaryKeys +
+            ", relations=" + relations +
+            ", uniqueConstraints=" + uniqueConstraints +
+            '}';
     }
 }

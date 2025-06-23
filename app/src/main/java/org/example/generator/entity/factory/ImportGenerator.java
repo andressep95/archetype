@@ -74,6 +74,7 @@ public class ImportGenerator {
             }
         }
 
+        /*
         if (table.getColumns().stream().anyMatch(ColumnMetadata::isUnique)) {
             imports.add("import jakarta.persistence.UniqueConstraint;");
         }
@@ -101,7 +102,7 @@ public class ImportGenerator {
                 imports.add(importStatement);
             }
         }
-
+*/
         // Ordenar y agregar imports al builder
         imports.stream().sorted().forEach(imp -> builder.append(imp).append("\n"));
         builder.append("\n");

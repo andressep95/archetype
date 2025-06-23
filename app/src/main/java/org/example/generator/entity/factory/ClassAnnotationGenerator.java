@@ -1,9 +1,6 @@
 package org.example.generator.entity.factory;
 
-import org.example.database.model.ColumnMetadata;
-import org.example.database.model.RelationMetadata;
-import org.example.database.model.TableIndexData;
-import org.example.database.model.TableMetadata;
+import org.example.database.model.*;
 import org.example.generator.entity.common.UtilsFactory;
 
 import java.util.*;
@@ -49,36 +46,33 @@ public class ClassAnnotationGenerator {
         }
 
         String tableName = table.getTableName().toLowerCase();
-        if (!tableName.endsWith("s")) {
-            tableName = UtilsFactory.toPlural(tableName);
-        }
 
         builder.append("@Table(name = \"").append(tableName).append("\"");
 
+
         // ========== UNIQUE CONSTRAINTS ==========
-        List<ColumnMetadata> uniqueColumns = table.getColumns().stream()
-            .filter(ColumnMetadata::isUnique)
-            .collect(Collectors.toList());
+        List<TableConstraintData> uniqueConstraints = table.getUniqueConstraints();
 
-        Set<String> uniqueColumnNames = uniqueColumns.stream()
-            .map(col -> col.getColumnName().toLowerCase())
-            .collect(Collectors.toSet());
-
-        if (!uniqueColumns.isEmpty()) {
+        if (!uniqueConstraints.isEmpty()) {
             builder.append(",\n    uniqueConstraints = {\n");
-            for (int i = 0; i < uniqueColumns.size(); i++) {
-                ColumnMetadata column = uniqueColumns.get(i);
+            for (int i = 0; i < uniqueConstraints.size(); i++) {
+                TableConstraintData constraint = uniqueConstraints.get(i);
                 builder.append("        @UniqueConstraint(\n")
-                    .append("            name = \"uk_")
-                    .append(tableName)
-                    .append("_")
-                    .append(column.getColumnName().toLowerCase())
+                    .append("            name = \"")
+                    .append(constraint.getConstraintName()) // Usar el nombre real de la restricción
                     .append("\",\n")
-                    .append("            columnNames = {\"")
-                    .append(column.getColumnName())
-                    .append("\"}\n")
+                    .append("            columnNames = {");
+
+                // Unir los nombres de las columnas para columnNames = {"col1", "col2"}
+                List<String> quotedColumnNames = constraint.getTargetColumnNames().stream()
+                    .map(colName -> "\"" + colName + "\"") // Rodear cada nombre de columna con comillas dobles
+                    .collect(Collectors.toList());
+
+                builder.append(String.join(", ", quotedColumnNames));
+
+                builder.append("}\n")
                     .append("        )");
-                if (i < uniqueColumns.size() - 1) {
+                if (i < uniqueConstraints.size() - 1) {
                     builder.append(",");
                 }
                 builder.append("\n");
@@ -86,8 +80,13 @@ public class ClassAnnotationGenerator {
             builder.append("    }");
         }
 
+        Set<String> allUniqueColumnNames = uniqueConstraints.stream()
+            .flatMap(uc -> uc.getTargetColumnNames().stream())
+            .map(String::toLowerCase)
+            .collect(Collectors.toSet());
+
         // ========== INDEXES ==========
-        List<String> indexAnnotations = buildIndexAnnotations(table, uniqueColumnNames);
+        List<String> indexAnnotations = buildIndexAnnotations(table, allUniqueColumnNames);
         if (!indexAnnotations.isEmpty()) {
             builder.append(",\n    indexes = {\n");
             for (int i = 0; i < indexAnnotations.size(); i++) {

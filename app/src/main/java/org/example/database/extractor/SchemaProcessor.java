@@ -3,6 +3,7 @@ package org.example.database.extractor;
 import org.example.database.extractor.postgres.PostgresSqlCreateTableStatementExtractor;
 import org.example.database.model.ColumnMetadata;
 import org.example.database.model.RelationMetadata;
+import org.example.database.model.TableConstraintData;
 import org.example.database.model.TableMetadata;
 
 import java.util.ArrayList;
@@ -37,6 +38,14 @@ public class SchemaProcessor {
             System.out.println("Nombre de la tabla detectado: " + tableName);
             table.setTableName(tableName);
 
+            // --- NUEVO: Extraer y almacenar las restricciones UNIQUE a nivel de tabla ---
+            List<TableConstraintData> uniqueConstraints = extract.extractUniqueConstraints(statement);
+            table.setUniqueConstraints(uniqueConstraints); // Asumiendo que TableMetadata tiene un setUniqueConstraints
+            System.out.println("Restricciones UNIQUE detectadas para '" + tableName + "': " + uniqueConstraints.size());
+            for (TableConstraintData uc : uniqueConstraints) {
+                System.out.println("  - Constraint: " + uc.getConstraintName() + ", Columns: " + uc.getTargetColumnNames());
+            }
+
             // Procesar columnas
             List<ColumnMetadata> columns = new ArrayList<>();
             List<String> columnDefinitions = extract.extractColumnDefinitions(statement);
@@ -66,10 +75,6 @@ public class SchemaProcessor {
                 boolean isNotNull = extract.isNotNullColumn(columnDef);
                 System.out.println("  Es NOT NULL: " + isNotNull);
                 column.setNotNull(isNotNull);
-
-                boolean isUnique = extract.isUniqueColumn(columnDef, statement);
-                System.out.println("  Es UNIQUE: " + isUnique);
-                column.setUnique(isUnique);
 
                 String defaultValue = extract.extractDefaultValue(columnDef);
                 System.out.println("  Valor DEFAULT: " + (defaultValue != null ? defaultValue : "null"));
