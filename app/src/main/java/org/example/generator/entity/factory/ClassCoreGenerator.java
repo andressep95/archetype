@@ -8,6 +8,7 @@ import org.example.generator.entity.common.UtilsFactory;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class ClassCoreGenerator {
@@ -70,6 +71,17 @@ public class ClassCoreGenerator {
                     relation.getSourceColumn().toLowerCase()
                                                      );
 
+                // Buscar la ColumnMetadata correspondiente a la columna fuente de la relación
+                Optional<ColumnMetadata> sourceColumnMetadata = table.getColumns().stream()
+                    .filter(col -> col.getColumnName().equalsIgnoreCase(relation.getSourceColumn()))
+                    .findFirst();
+
+                boolean isNullable = true; // Por defecto, una FK podría ser nullable
+                if (sourceColumnMetadata.isPresent()) {
+                    isNullable = !sourceColumnMetadata.get().isNotNull();
+                }
+
+
                 builder.append("    @ManyToOne\n");
 
                 if (UtilsFactory.needsCompositeKey(table)) {
@@ -82,7 +94,7 @@ public class ClassCoreGenerator {
                     .append("        name = \"")
                     .append(relation.getSourceColumn())
                     .append("\",\n")
-                    .append("        nullable = false,\n")
+                    .append("        nullable = ").append(isNullable).append(",\n")
                     .append("        foreignKey = @ForeignKey(name = \"")
                     .append(foreignKeyName)
                     .append("\")\n")

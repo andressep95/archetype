@@ -15,7 +15,7 @@ CREATE TABLE course (
 CREATE TABLE enrollment (
     id SERIAL PRIMARY KEY,
     student_id INTEGER REFERENCES student(id),
-    course_id INTEGER REFERENCES course(id),
+    course_id INTEGER REFERENCES course(id) NOT NULL,
     enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
