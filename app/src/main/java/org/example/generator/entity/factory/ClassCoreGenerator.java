@@ -65,9 +65,8 @@ public class ClassCoreGenerator {
 
                 // Generar nombre único para la clave foránea
                 String foreignKeyName = String.format(
-                    "fk_%s_%s_%s",
+                    "fk_%s_%s",
                     table.getTableName().toLowerCase(),
-                    relation.getTargetTable().toLowerCase(),
                     relation.getSourceColumn().toLowerCase()
                                                      );
 

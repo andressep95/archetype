@@ -12,10 +12,20 @@ Claro, aquí tienes el bloque en formato **Markdown** listo para documentación 
 sudo mv app/build/libs/arc.jar /usr/local/bin/arc
 ```
 
+### 📦 Mover archivo2.0
+
+```bash
+sudo mv app/build/libs/app.jar /usr/local/bin/arc
+```
+
 ### 🔐 Dar permisos de ejecutable
 
 ```bash
 sudo chmod +x /usr/local/bin/arc
+```
+
+```bash
+sudo chmod +x /usr/local/bin/app
 ```
 
 ### 🔍 Verificar ubicación y permisos
