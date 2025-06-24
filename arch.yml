@@ -6,7 +6,7 @@ sql:
   engine: "postgresql"  # Options: postgresql, mysql, oracle, sqlserver to subsequently define configurations in application.properties or application.yml
   schema:
     path:
-      - "db/students.sql"
+      - "db/product.sql"
 
 
 output:

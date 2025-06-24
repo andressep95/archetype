@@ -24,10 +24,6 @@ sudo mv app/build/libs/app.jar /usr/local/bin/arc
 sudo chmod +x /usr/local/bin/arc
 ```
 
-```bash
-sudo chmod +x /usr/local/bin/app
-```
-
 ### 🔍 Verificar ubicación y permisos
 
 ```bash
