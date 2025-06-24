@@ -7,15 +7,15 @@ CREATE TABLE student (
 CREATE TABLE course (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100),
-    description TEXT,
-    CONSTRAINT unique_course_name_description UNIQUE (name, description)
-
+    description TEXT
 );
 
 CREATE TABLE enrollment (
     id SERIAL PRIMARY KEY,
     student_id INTEGER REFERENCES student(id),
-    course_id INTEGER REFERENCES course(id) NOT NULL,
+    course_id INTEGER REFERENCES course(id),
     enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+ALTER TABLE course
+ADD CONSTRAINT unique_name_description UNIQUE (name, description);

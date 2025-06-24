@@ -17,3 +17,5 @@ CREATE TABLE enrollment (
     enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+ALTER TABLE course
+ADD CONSTRAINT unique_name_description UNIQUE (name, description);

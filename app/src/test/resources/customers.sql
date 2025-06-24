@@ -16,3 +16,6 @@ CREATE TABLE payment (
     amount DECIMAL(10,2),
     payment_date DATE
 );
+
+ALTER TABLE customer
+ADD CONSTRAINT unique_name UNIQUE (name);

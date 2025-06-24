@@ -1,11 +1,9 @@
 package org.example.database.converter;
 
 import org.example.database.converter.postgres.PostgresSqlAlterTableStatementExtractor;
-import org.example.database.model.ColumnMetadata;
-import org.example.database.model.RelationMetadata;
-import org.example.database.model.TableAlteration;
-import org.example.database.model.TableMetadata;
+import org.example.database.model.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -108,9 +106,9 @@ public class AlterTableProcessor {
             processPrimaryKeyConstraint(table, alteration);
         } else if (statement.contains("FOREIGN KEY")) {
             processForeignKeyConstraint(table, alteration);
-        } /*else if (statement.contains("UNIQUE")) {
+        } else if (statement.contains("UNIQUE")) {
             processUniqueConstraint(table, alteration);
-        }*/
+        }
     }
 
     private void processPrimaryKeyConstraint(TableMetadata table, TableAlteration alteration) {
@@ -138,6 +136,36 @@ public class AlterTableProcessor {
                     table.getPrimaryKeys().add(cleanPk);
                 }
             }
+        }
+    }
+
+    private void processUniqueConstraint(TableMetadata table, TableAlteration alteration) {
+        String statement = alteration.getFullStatement();
+        Pattern pattern = Pattern.compile(
+            "(?i)ADD\\s+CONSTRAINT\\s+(\\w+)\\s+UNIQUE\\s*\\(([^)]+)\\)",
+            Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(statement);
+
+        if (matcher.find()) {
+            String constraintName = matcher.group(1).trim();
+            String[] columnNames = matcher.group(2).split("\\s*,\\s*");
+
+            List<String> cleanedColumns = new ArrayList<>();
+            for (String col : columnNames) {
+                String cleanCol = col.replaceAll("[\"']", "").trim().toLowerCase();
+                if (table.getColumns().stream().noneMatch(c -> c.getColumnName().equals(cleanCol))) {
+                    throw new IllegalArgumentException(
+                        "La columna '" + cleanCol + "' no existe en la tabla '" + table.getTableName() + "'");
+                }
+                cleanedColumns.add(cleanCol);
+            }
+
+            TableConstraintData constraint = new TableConstraintData();
+            constraint.setTableName(table.getTableName());
+            constraint.setConstraintName(constraintName);
+            constraint.setTargetColumnNames(cleanedColumns);
+
+            table.getUniqueConstraints().add(constraint);
         }
     }
 

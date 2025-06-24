@@ -3,6 +3,8 @@ package org.example.database.converter.postgres;
 import org.example.database.converter.SqlAlterTableStatementExtractor;
 import org.example.database.model.AlterType;
 import org.example.database.model.TableAlteration;
+import org.example.database.model.TableConstraintData;
+import org.example.database.model.TableMetadata;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -223,6 +225,7 @@ public class PostgresSqlAlterTableStatementExtractor implements SqlAlterTableSta
         // If no match
         return null;
     }
+
 
     /**
      * Cleans an identifier by removing invalid characters and handling quotes
