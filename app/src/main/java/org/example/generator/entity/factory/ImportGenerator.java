@@ -74,23 +74,12 @@ public class ImportGenerator {
             }
         }
 
-        /*
-        if (table.getColumns().stream().anyMatch(ColumnMetadata::isUnique)) {
+
+        if (!table.getUniqueConstraints().isEmpty()) {
             imports.add("import jakarta.persistence.UniqueConstraint;");
         }
 
-        boolean needsIndexImport = table.getIndexes().stream()
-            .anyMatch(index -> {
-
-                if (index.getTargetColumnName().size() == 1) {
-                    String columnName = index.getTargetColumnName().get(0);
-                    boolean isColumnUnique = table.getColumns().stream()
-                        .filter(col -> col.getColumnName().equals(columnName))
-                        .anyMatch(ColumnMetadata::isUnique);
-                    return !isColumnUnique;
-                }
-                return true;
-            });
+        boolean needsIndexImport = !table.getIndexes().isEmpty();
 
         if (needsIndexImport) {
             imports.add("import jakarta.persistence.Index;");
@@ -102,7 +91,7 @@ public class ImportGenerator {
                 imports.add(importStatement);
             }
         }
-*/
+
         // Ordenar y agregar imports al builder
         imports.stream().sorted().forEach(imp -> builder.append(imp).append("\n"));
         builder.append("\n");
